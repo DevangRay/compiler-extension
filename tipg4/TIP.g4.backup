@@ -47,8 +47,6 @@ expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
      | expr op=(EQ | NE) expr 			#equalityExpr
      | IDENTIFIER				#varExpr
      | NUMBER					#numExpr
-     | KFALSE                   #falseExpr //DELIVERABLE 1
-     | KTRUE                    #trueExpr  //DELIVERABLE 1
      | KINPUT					#inputExpr
      | KALLOC expr				#allocExpr
      | KNULL					#nullExpr
@@ -111,9 +109,6 @@ KRETURN : 'return' ;
 KNULL   : 'null' ;
 KOUTPUT : 'output' ;
 KERROR  : 'error' ;
-// DELIVERABLE 1
-KTRUE   : 'true' ;
-KFALSE  : 'false' ;
 
 // Keyword to declare functions as polymorphic
 KPOLY   : 'poly' ;
