@@ -37,10 +37,10 @@ nameDeclaration : IDENTIFIER ;
 // weeding pass. 
 //
 expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
-     | '[' ((NUMBER ',')* NUMBER)? ']'          #arrayExpr
-     | '[' NUMBER 'of' NUMBER ']'  #arrayRepExpr
-     | op='#' IDENTIFIER        #arrayLenOp
-     | IDENTIFIER'['NUMBER']'   #arrayRefExpr
+     | '[' ((expr ',')* expr)? ']'          #arrayExpr
+     | '[' expr 'of' expr ']'  #arrayRepExpr
+     | op='#' IDENTIFIER        #arrayLenOp //change to OP perhaps
+     | IDENTIFIER'['expr']'   #arrayRefExpr
      | expr '.' IDENTIFIER 	    #accessExpr
      | '*' expr 				#deRefExpr // ask in class why this isnt a MOD identifier
      | SUB expr                 #negExpr
@@ -71,7 +71,7 @@ fieldExpr : IDENTIFIER ':' expr ;
 statement : blockStmt
     | assignStmt
     | whileStmt
-    | forStmt
+    | forStmt //DELIVERABLE 1
     | ifStmt
     | outputStmt
     | errorStmt
@@ -85,7 +85,7 @@ blockStmt : '{' (statement*) '}' ;
 
 whileStmt : KWHILE '(' expr ')' statement ;
 
-forStmt: KFOR '(' expr ':' expr ')'statement ;
+forStmt : KFOR '(' expr ':' expr ('...' expr ('by' expr)? )? ')' statement ; //DELIVERABLE 1
 
 ifStmt : KIF '(' expr ')' statement (KELSE statement)? ;
 
@@ -121,7 +121,7 @@ NUMBER : [0-9]+ ;
 KALLOC  : 'alloc' ;
 KINPUT  : 'input' ;
 KWHILE  : 'while' ;
-KFOR    : 'for' ;
+KFOR    : 'for' ; //DELIVERABLE 1
 KIF     : 'if' ;
 KELSE   : 'else' ;
 KVAR    : 'var' ;
