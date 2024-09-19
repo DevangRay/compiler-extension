@@ -37,14 +37,20 @@ nameDeclaration : IDENTIFIER ;
 // weeding pass. 
 //
 expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
-     | expr '.' IDENTIFIER 			#accessExpr
-     | '*' expr 				#deRefExpr
+     | '[' NUMBER* ']'          #arrayExpr
+     | '[' NUMBER 'of' NUMBER ']'  #arrayRepExpr
+     | op='#' IDENTIFIER        #arrayLenOp
+     | IDENTIFIER'['NUMBER']'   #arrayRefExpr
+     | expr '.' IDENTIFIER 	    #accessExpr
+     | '*' expr 				#deRefExpr // ask in class why this isnt a MOD identifier
+     | SUB expr                 #negExpr
      | SUB NUMBER				#negNumber
      | '&' expr					#refExpr
-     | expr op=(MUL | DIV) expr 		#multiplicativeExpr
+     | expr op=(MUL | DIV | MOD) expr 		#multiplicativeExpr
      | expr op=(ADD | SUB) expr 		#additiveExpr
-     | expr op=GT expr 				#relationalExpr
+     | expr op=(LT | LTE | GT | GTE) expr 		#relationalExpr
      | expr op=(EQ | NE) expr 			#equalityExpr
+     | expr '?' expr ':' expr   #ternaryExpr
      | IDENTIFIER				#varExpr
      | NUMBER					#numExpr
      | KINPUT					#inputExpr
@@ -66,6 +72,8 @@ statement : blockStmt
     | ifStmt
     | outputStmt
     | errorStmt
+    | incrementStmt
+    | decrementStmt
 ;
 
 assignStmt : expr '=' expr ';' ;
@@ -82,7 +90,9 @@ errorStmt : KERROR expr ';'  ;
 
 returnStmt : KRETURN expr ';'  ;
 
+incrementStmt : IDENTIFIER'++' ';' ;
 
+decrementStmt : IDENTIFIER'--' ';' ;
 ////////////////////// TIP Lexicon ////////////////////////// 
 
 // By convention ANTLR4 lexical elements use all caps
@@ -92,8 +102,12 @@ DIV : '/' ;
 ADD : '+' ;
 SUB : '-' ;
 GT  : '>' ;
+GTE : '>=' ;
+LT : '<' ;
+LTE : '<=' ;
 EQ  : '==' ;
 NE  : '!=' ;
+MOD : '%' ;
 
 NUMBER : [0-9]+ ;
 
