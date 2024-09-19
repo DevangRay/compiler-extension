@@ -37,7 +37,7 @@ nameDeclaration : IDENTIFIER ;
 // weeding pass. 
 //
 expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
-     | '[' NUMBER* ']'          #arrayExpr
+     | '[' ((NUMBER ',')* NUMBER)? ']'          #arrayExpr
      | '[' NUMBER 'of' NUMBER ']'  #arrayRepExpr
      | op='#' IDENTIFIER        #arrayLenOp
      | IDENTIFIER'['NUMBER']'   #arrayRefExpr
