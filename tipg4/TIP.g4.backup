@@ -37,24 +37,16 @@ nameDeclaration : IDENTIFIER ;
 // weeding pass. 
 //
 expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
-     | '[' ((expr ',')* expr)? ']'          #arrayExpr
-     | '[' expr 'of' expr ']'  #arrayRepExpr
-     | op='#' IDENTIFIER        #arrayLenOp //change to OP perhaps
-     | IDENTIFIER'['expr']'   #arrayRefExpr
-     | expr '.' IDENTIFIER 	    #accessExpr
-     | '*' expr 				#deRefExpr // ask in class why this isnt a MOD identifier
-     | SUB expr                 #negExpr
+     | expr '.' IDENTIFIER 			#accessExpr
+     | '*' expr 				#deRefExpr
      | SUB NUMBER				#negNumber
      | '&' expr					#refExpr
-     | expr op=(MUL | DIV | MOD) expr 		#multiplicativeExpr
+     | expr op=(MUL | DIV) expr 		#multiplicativeExpr
      | expr op=(ADD | SUB) expr 		#additiveExpr
-     | expr op=(LT | LTE | GT | GTE) expr 		#relationalExpr
+     | expr op=GT expr 				#relationalExpr
      | expr op=(EQ | NE) expr 			#equalityExpr
-     | expr '?' expr ':' expr   #ternaryExpr
      | IDENTIFIER				#varExpr
      | NUMBER					#numExpr
-     | KFALSE                   #falseExpr //DELIVERABLE 1
-     | KTRUE                    #trueExpr  //DELIVERABLE 1
      | KINPUT					#inputExpr
      | KALLOC expr				#allocExpr
      | KNULL					#nullExpr
@@ -71,12 +63,9 @@ fieldExpr : IDENTIFIER ':' expr ;
 statement : blockStmt
     | assignStmt
     | whileStmt
-    | forStmt //DELIVERABLE 1
     | ifStmt
     | outputStmt
     | errorStmt
-    | incrementStmt
-    | decrementStmt
 ;
 
 assignStmt : expr '=' expr ';' ;
@@ -84,8 +73,6 @@ assignStmt : expr '=' expr ';' ;
 blockStmt : '{' (statement*) '}' ;
 
 whileStmt : KWHILE '(' expr ')' statement ;
-
-forStmt : KFOR '(' expr ':' expr ('...' expr ('by' expr)? )? ')' statement ; //DELIVERABLE 1
 
 ifStmt : KIF '(' expr ')' statement (KELSE statement)? ;
 
@@ -95,9 +82,7 @@ errorStmt : KERROR expr ';'  ;
 
 returnStmt : KRETURN expr ';'  ;
 
-incrementStmt : IDENTIFIER'++' ';' ;
 
-decrementStmt : IDENTIFIER'--' ';' ;
 ////////////////////// TIP Lexicon ////////////////////////// 
 
 // By convention ANTLR4 lexical elements use all caps
@@ -107,12 +92,8 @@ DIV : '/' ;
 ADD : '+' ;
 SUB : '-' ;
 GT  : '>' ;
-GTE : '>=' ;
-LT : '<' ;
-LTE : '<=' ;
 EQ  : '==' ;
 NE  : '!=' ;
-MOD : '%' ;
 
 NUMBER : [0-9]+ ;
 
@@ -121,7 +102,6 @@ NUMBER : [0-9]+ ;
 KALLOC  : 'alloc' ;
 KINPUT  : 'input' ;
 KWHILE  : 'while' ;
-KFOR    : 'for' ; //DELIVERABLE 1
 KIF     : 'if' ;
 KELSE   : 'else' ;
 KVAR    : 'var' ;
@@ -129,9 +109,6 @@ KRETURN : 'return' ;
 KNULL   : 'null' ;
 KOUTPUT : 'output' ;
 KERROR  : 'error' ;
-// DELIVERABLE 1
-KTRUE   : 'true' ;
-KFALSE  : 'false' ;
 
 // Keyword to declare functions as polymorphic
 KPOLY   : 'poly' ;
