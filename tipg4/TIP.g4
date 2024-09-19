@@ -42,14 +42,16 @@ expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
      | op='#' IDENTIFIER        #arrayLenOp //change to OP perhaps
      | IDENTIFIER'['expr']'   #arrayRefExpr
      | expr '.' IDENTIFIER 	    #accessExpr
-     | '*' expr 				#deRefExpr // ask in class why this isnt a MOD identifier
+     | '*' expr 				#deRefExpr // ask in class why this isnt a MUL identifier
      | SUB expr                 #negExpr
      | SUB NUMBER				#negNumber
+     | NOT expr                 #logicalNotExpr
      | '&' expr					#refExpr
      | expr op=(MUL | DIV | MOD) expr 		#multiplicativeExpr
      | expr op=(ADD | SUB) expr 		#additiveExpr
      | expr op=(LT | LTE | GT | GTE) expr 		#relationalExpr
      | expr op=(EQ | NE) expr 			#equalityExpr
+     | expr op=(AND | OR) expr  #andOrExpr
      | expr '?' expr ':' expr   #ternaryExpr
      | IDENTIFIER				#varExpr
      | NUMBER					#numExpr
@@ -112,7 +114,10 @@ LT : '<' ;
 LTE : '<=' ;
 EQ  : '==' ;
 NE  : '!=' ;
+AND : 'and' ;
+OR : 'or' ;
 MOD : '%' ;
+NOT : 'not' ; //DELIVERABLE 1
 
 NUMBER : [0-9]+ ;
 
