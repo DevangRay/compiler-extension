@@ -5,7 +5,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("SIP Parser: conditionals", "[TIP Parser]") {
+TEST_CASE("SIP Parser: conditionals", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
       short() {
