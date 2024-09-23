@@ -39,8 +39,8 @@ nameDeclaration : IDENTIFIER ;
 expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
      | '[' ((expr ',')* expr)? ']'          #arrayExpr
      | '[' expr 'of' expr ']'  #arrayRepExpr
-     | op='#' IDENTIFIER        #arrayLenOp //change to OP perhaps
-     | IDENTIFIER'['expr']'   #arrayRefExpr
+     | op='#' expr        #arrayLenOp //change to OP perhaps
+     | expr('['expr']')+   #arrayRefExpr //does SIP support nested array accesses?
      | expr '.' IDENTIFIER 	    #accessExpr
      | '*' expr 				#deRefExpr // ask in class why this isnt a MUL identifier
      | SUB NUMBER				#negNumber
@@ -80,7 +80,7 @@ statement : blockStmt
     | errorStmt
     | incrementStmt
     | decrementStmt
-;
+;  //is there a statement for just a function call ==> printResults();
 
 assignStmt : expr '=' expr ';' ;
 
@@ -100,9 +100,9 @@ errorStmt : KERROR expr ';'  ;
 
 returnStmt : KRETURN expr ';'  ;
 
-incrementStmt : IDENTIFIER'++' ';' ;
+incrementStmt : expr '++' ';' ;
 
-decrementStmt : IDENTIFIER'--' ';' ;
+decrementStmt : expr '--' ';' ;
 ////////////////////// TIP Lexicon ////////////////////////// 
 
 // By convention ANTLR4 lexical elements use all caps
