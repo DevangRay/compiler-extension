@@ -100,9 +100,9 @@ errorStmt : KERROR expr ';'  ;
 
 returnStmt : KRETURN expr ';'  ;
 
-incrementStmt : IDENTIFIER'++' ';' ;
+incrementStmt : expr '++' ';' ;
 
-decrementStmt : IDENTIFIER'--' ';' ;
+decrementStmt : expr '--' ';' ;
 ////////////////////// TIP Lexicon ////////////////////////// 
 
 // By convention ANTLR4 lexical elements use all caps

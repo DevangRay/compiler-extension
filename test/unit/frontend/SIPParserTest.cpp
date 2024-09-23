@@ -331,6 +331,14 @@ TEST_CASE("SIP Parser: Nested Array Element Reference Operator", "[SIP Parser]")
  * They access the parse tree and ensure that the higher precedence
  * operator is nested more deeply than the lower precedence operator.
  */
+TEST_CASE("SIP Parser: Addition higher precedence than conditionals", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(main() { var x, y; x = 1; y = 4; if (x + 4 >= y) x = x - 4; return x; })";
+  std::string expected = "(expr (expr (expr x) + (expr 4)) >= (expr y))";
+  std::string tree = ParserHelper::parsetree(stream);
+  REQUIRE(tree.find(expected) != std::string::npos);
+}
+
 TEST_CASE("SIP Parser: Modulus higher precedence than ternary", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(main() { var x; x = 1; return x % x ? 2 : 6; })";
@@ -360,6 +368,32 @@ TEST_CASE("SIP Parser: Arithmetic negation higher precedence than modulus", "[SI
   std::stringstream stream;
   stream << R"(main() { var x; x = 3; return -x % 3; })";
   std::string expected = "(expr (expr - (expr x)) % (expr 3))";
+  std::string tree = ParserHelper::parsetree(stream);
+  REQUIRE(tree.find(expected) != std::string::npos);
+}
+
+TEST_CASE("SIP Parser: Prefix length operator higher precedence than modulus", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(main() { var x; x = [4]; return #x % 2;})";
+  std::string expected = "(expr (expr # (expr x)) % (expr 2))";
+  std::string tree = ParserHelper::parsetree(stream);
+//  std::cout << tree;
+  REQUIRE(tree.find(expected) != std::string::npos);
+}
+
+TEST_CASE("SIP Parser: Array subscripting higher precedence than decrementing", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(main() { var x; x = [4]; x[0]++; return x[0];})";
+  std::string expected = "(expr (expr x) [ (expr 0) ]) ++ ;)";
+  std::string tree = ParserHelper::parsetree(stream);
+  REQUIRE(tree.find(expected) != std::string::npos);
+}
+
+TEST_CASE("SIP Parser: Array subscripting higher precedence than arithmetic negation", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(main() { var x; x = [4]; return -x[0]; })";
+  std::string expected = "(expr - (expr (expr x) [ (expr 0) ]))";
+  //inner most parenthesis has array access, and then it goes out to negation
   std::string tree = ParserHelper::parsetree(stream);
   REQUIRE(tree.find(expected) != std::string::npos);
 }
