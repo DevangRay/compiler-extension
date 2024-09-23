@@ -267,23 +267,33 @@ TEST_CASE("TIP Parser: keywords as ids", "[TIP Parser]") {
   REQUIRE_FALSE(ParserHelper::is_parsable(stream));
 }
 
-TEST_CASE("TIP Lexer: illegal comparison token", "[TIP Lexer]") {
-  std::stringstream stream;
-  stream << R"(
-      operators() { var x; if (x <= 0) x = x + 1; return x; }
-    )";
+/*
+  DELIVERABLE 1:
+  This test is commented out because it tests that the operator (<=) is illegal
+  However with the SIP extension, this is no longer a valid test for the language
+ */
+//TEST_CASE("TIP Lexer: illegal comparison token", "[TIP Lexer]") {
+//  std::stringstream stream;
+//  stream << R"(
+//      operators() { var x; if (x <= 0) x = x + 1; return x; }
+//    )";
+//
+//  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+//}
 
-  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
-}
-
-TEST_CASE("TIP Lexer: illegal operator token", "[TIP Lexer]") {
-  std::stringstream stream;
-  stream << R"(
-      operators() { var x; if (x == 0) x = x % 2; return x; }
-    )";
-
-  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
-}
+/*
+  DELIVERABLE 1:
+  This test is commented out because it tests that the operator (%) is illegal
+  However with the SIP extension, this is no longer a valid test for the language
+ */
+//TEST_CASE("TIP Lexer: illegal operator token", "[TIP Lexer]") {
+//  std::stringstream stream;
+//  stream << R"(
+//      operators() { var x; if (x == 0) x = x % 2; return x; }
+//    )";
+//
+//  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+//}
 
 TEST_CASE("TIP Lexer: illegal identifier token", "[TIP Lexer]") {
   std::stringstream stream;
