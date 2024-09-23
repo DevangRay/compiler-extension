@@ -73,7 +73,8 @@ fieldExpr : IDENTIFIER ':' expr ;
 statement : blockStmt
     | assignStmt
     | whileStmt
-    | forStmt //DELIVERABLE 1
+    | forRangeStmt //DELIVERABLE 1
+    | forItrStmt //DELIVERABLE 1
     | ifStmt
     | outputStmt
     | errorStmt
@@ -87,7 +88,9 @@ blockStmt : '{' (statement*) '}' ;
 
 whileStmt : KWHILE '(' expr ')' statement ;
 
-forStmt : KFOR '(' expr ':' expr ('..' expr ('by' expr)? )? ')' statement ; //DELIVERABLE 1
+forRangeStmt : KFOR '(' expr ':' expr '..' expr 'by' expr ')' statement ; //DELIVERABLE 1
+
+forItrStmt : KFOR '(' expr ':' expr ')' statement ; //DELIVERABLE 1
 
 ifStmt : KIF '(' expr ')' statement (KELSE statement)? ;
 
