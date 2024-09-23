@@ -43,8 +43,8 @@ expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
      | IDENTIFIER'['expr']'   #arrayRefExpr
      | expr '.' IDENTIFIER 	    #accessExpr
      | '*' expr 				#deRefExpr // ask in class why this isnt a MUL identifier
-     | SUB expr                 #negExpr
      | SUB NUMBER				#negNumber
+     | SUB expr                 #negExpr
      | NOT expr                 #logicalNotExpr
      | '&' expr					#refExpr
      | expr op=(MUL | DIV | MOD) expr 		#multiplicativeExpr
@@ -87,7 +87,7 @@ blockStmt : '{' (statement*) '}' ;
 
 whileStmt : KWHILE '(' expr ')' statement ;
 
-forStmt : KFOR '(' expr ':' expr ('...' expr ('by' expr)? )? ')' statement ; //DELIVERABLE 1
+forStmt : KFOR '(' expr ':' expr ('..' expr ('by' expr)? )? ')' statement ; //DELIVERABLE 1
 
 ifStmt : KIF '(' expr ')' statement (KELSE statement)? ;
 
