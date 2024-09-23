@@ -80,7 +80,7 @@ statement : blockStmt
     | errorStmt
     | incrementStmt
     | decrementStmt
-;
+;  //is there a statement for just a function call ==> printResults();
 
 assignStmt : expr '=' expr ';' ;
 
