@@ -2,7 +2,8 @@ add_executable(frontend_unit_tests
         treetypes/ASTNodeTests.cpp)
 target_sources(
   frontend_unit_tests
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/TIPParserTest.cpp
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/SIPParserTest.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/TIPParserTest.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTBuilderTest.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTPrinterTest.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTVisualizerTest.cpp
