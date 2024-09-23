@@ -170,6 +170,163 @@ TEST_CASE("SIP Parser: Arithmetic Negation Positive Case", "[SIP Parser]") {
   REQUIRE(ParserHelper::is_parsable(stream));
 }
 
+TEST_CASE("SIP Parser: Array explicit constructor Positive Case", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = [0, 1, 2, 3, 4, 5];
+        return x[1];
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Array explicit constructor no elements Positive Case", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = [];
+        return 10;
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Array explicit constructor single element Positive Case", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x, y;
+        x = [123];
+        return x[0];
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Array explicit constructor hanging comma case", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = [0, 1, 2, 3, 4, 5,];
+        return x[1];
+      }
+    )";
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Array range constructor Positive Case", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x, y;
+        x = [y of 12];
+        return x[1];
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Variable with array constructor of keyword", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x, of;
+        of = 1;
+        x = [y of 12];
+        return of;
+      }
+    )";
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Array range constructor Negative Case", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x, y;
+        x = [y-- of 12];
+        return x[1];
+      }
+    )";
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: 2-D array range constructor", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x, y;
+        x = [[y of 12], [y of 12]];
+        return x[1];
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: multidimensional array explicit constructor", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = [[0, 1, 2], [], [0], [0, 5, [8, 90]]];
+        return x[1];
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Unary array length operator positive Case", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = [0, 1, 2, 3];
+        return #x;
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Unary array length operator on explicit array", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = #[];
+        return x ? 1 : 0;
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Basic Array Element Reference Operator", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+         var x;
+         x = [1, 2, 3, 5, -15];
+         return x[3];
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Nested Array Element Reference Operator", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+         var x;
+         x = [[0, 1, 2], [], [0], [0, 5, [8, 90]]];
+         return x[3][0][2][1];
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
 /* These tests checks for operator precedence.
  * They access the parse tree and ensure that the higher precedence
  * operator is nested more deeply than the lower precedence operator.
