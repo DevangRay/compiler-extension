@@ -465,6 +465,31 @@ TEST_CASE("SIP Parser: Nested Array Element Reference Operator", "[SIP Parser]")
   REQUIRE(ParserHelper::is_parsable(stream));
 }
 
+TEST_CASE("SIP Parser: Invalid Operator Right Shift", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+         var x;
+         x = 2;
+         return x >> 8;
+      }
+    )";
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Invalid Operator XOR", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+         var x, y;
+         x = 2;
+         y = ^x;
+         return y;
+      }
+    )";
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+
 /* These tests checks for operator precedence.
  * They access the parse tree and ensure that the higher precedence
  * operator is nested more deeply than the lower precedence operator.
