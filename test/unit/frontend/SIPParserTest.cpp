@@ -85,7 +85,7 @@ TEST_CASE("SIP Parser: logical not higher precedence than or. not second item", 
   REQUIRE(tree.find(expected) != std::string::npos);
 }
 
-TEST_CASE("SIP Parser: 'and' logical precedence same as 'or', 'and' first", "[SIP Parser]") {
+TEST_CASE("SIP Parser: 'and' logical precedence higher than 'or', 'and' first", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(main() { return x and p or y; })";
   std::string expected = "(expr (expr (expr x) and (expr p)) or (expr y))";
@@ -93,10 +93,10 @@ TEST_CASE("SIP Parser: 'and' logical precedence same as 'or', 'and' first", "[SI
   REQUIRE(tree.find(expected) != std::string::npos);
 }
 
-TEST_CASE("SIP Parser: 'and' logical precedence same as 'or', 'or' first", "[SIP Parser]") {
+TEST_CASE("SIP Parser: 'and' logical precedence higher than 'or', 'or' first", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(main() { return x or p and y; })";
-  std::string expected = "(expr (expr (expr x) or (expr p)) and (expr y))";
+  std::string expected = "(expr (expr x) or (expr (expr p) and (expr y)))";
   std::string tree = ParserHelper::parsetree(stream);
   REQUIRE(tree.find(expected) != std::string::npos);
 }
