@@ -39,7 +39,6 @@ nameDeclaration : IDENTIFIER ;
 expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
      | '[' ((expr ',')* expr)? ']'          #arrayExpr
      | '[' expr 'of' expr ']'  #arrayRepExpr
-     | ARRLENGTH expr        #arrayLenOp
      | expr('['expr']')+   #arrayRefExpr //does SIP support nested array accesses?
      | expr '.' IDENTIFIER 	    #accessExpr
      | '*' expr 				#deRefExpr // ask in class why this isnt a MUL identifier
@@ -47,6 +46,7 @@ expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
      | SUB expr                 #negExpr
      | NOT expr                 #logicalNotExpr
      | '&' expr					#refExpr
+     | ARRLENGTH expr        #arrayLenOp
      | expr op=(MUL | DIV | MOD) expr 		#multiplicativeExpr
      | expr op=(ADD | SUB) expr 		#additiveExpr
      | expr op=(LT | LTE | GT | GTE) expr 		#relationalExpr
