@@ -144,6 +144,8 @@ TEST_CASE("SIP Parser: for loop, range type", "[SIP Parser]") {
   REQUIRE(ParserHelper::is_parsable(stream));
 }
 
+
+//start conditionals testing without precedence
 TEST_CASE("SIP Parser: Conditionals positive case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -192,7 +194,10 @@ TEST_CASE("SIP Parser: LTE conditional negative case", "[SIP Parser]") {
 
   REQUIRE_FALSE(ParserHelper::is_parsable(stream));
 }
+// end consitional testing without precedence
 
+
+//start incrementer testing without precedence
 TEST_CASE("SIP Parser: Incrementor/Decrementor Positive Case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -229,6 +234,20 @@ TEST_CASE("SIP Parser: Incrementor/Decrementor Bad Syntax Case", "[SIP Parser]")
   REQUIRE_FALSE(ParserHelper::is_parsable(stream));
 }
 
+TEST_CASE("SIP Parser: Repeated Incrementor/Decrementor", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = 0;
+        x++ ++;
+        return x;
+      }
+    )";
+
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+
 TEST_CASE("SIP Parser: Incrementor/Decrementor Expression Case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -249,7 +268,9 @@ TEST_CASE("SIP Parser: Increment must be statement", "[SIP Parser]") {
   stream << R"(main() { var x; x = 1; return (x++) * 6; })";
   REQUIRE_FALSE(ParserHelper::is_parsable(stream));
 }
+//end conditionals testing without precedence
 
+//start ternary operator testing without precedence
 TEST_CASE("SIP Parser: Ternary Operator Positive Case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -281,7 +302,9 @@ TEST_CASE("SIP Parser: Nested Ternary Operators", "[SIP Parser]") {
 
   REQUIRE(ParserHelper::is_parsable(stream));
 }
+//end ternary operator testing without precedence
 
+//start modulus testing without precedence
 TEST_CASE("SIP Parser: Modulus Positive Case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -295,6 +318,9 @@ TEST_CASE("SIP Parser: Modulus Positive Case", "[SIP Parser]") {
   REQUIRE(ParserHelper::is_parsable(stream));
 }
 
+//end modulus testing without precedence
+
+//start arithmetic negation testing without precedence
 TEST_CASE("SIP Parser: Arithmetic Negation Positive Case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -308,6 +334,20 @@ TEST_CASE("SIP Parser: Arithmetic Negation Positive Case", "[SIP Parser]") {
   REQUIRE(ParserHelper::is_parsable(stream));
 }
 
+TEST_CASE("SIP Parser: Repeated Arithmetic Negation", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x;
+        x = - - 3;
+        return x == 3;
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+//end arithmetic negation testing without precedence
+
+//start array testing without precedence
 TEST_CASE("SIP Parser: Array explicit constructor Positive Case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -416,7 +456,9 @@ TEST_CASE("SIP Parser: multidimensional array explicit constructor", "[SIP Parse
     )";
   REQUIRE(ParserHelper::is_parsable(stream));
 }
+//end array testing without precedence
 
+//start unary array length operator testing without precedence
 TEST_CASE("SIP Parser: Unary array length operator positive Case", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -446,14 +488,16 @@ TEST_CASE("SIP Parser: Unary array length operator on empty array", "[SIP Parser
   stream << R"(
       func() {
         var x, checker;
-        x = #[];
-        checker = x == 0;
+        x = #[] == 0;
+        checker = x == true;
         return checker;
       }
     )";
   REQUIRE(ParserHelper::is_parsable(stream));
 }
+//end unary array length operator testing without precedence
 
+//start array reference operator testing without precedence
 TEST_CASE("SIP Parser: Basic Array Element Reference Operator", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -477,7 +521,9 @@ TEST_CASE("SIP Parser: Nested Array Element Reference Operator", "[SIP Parser]")
     )";
   REQUIRE(ParserHelper::is_parsable(stream));
 }
+//end array reference operator testing without precedence
 
+//start invalid operator testing
 TEST_CASE("SIP Parser: Invalid Operator Right Shift", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(
@@ -502,10 +548,35 @@ TEST_CASE("SIP Parser: Invalid Operator XOR", "[SIP Parser]") {
     )";
   REQUIRE_FALSE(ParserHelper::is_parsable(stream));
 }
+//end invalid operator testing
 
-/* These tests checks for operator precedence.
- * They access the parse tree and ensure that the higher precedence
- * operator is nested more deeply than the lower precedence operator.
+//start invalid variable name testing
+TEST_CASE("SIP Parser: Invalid Variable Name #", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+         var #;
+         # = 3 + 4;
+         return #;
+      }
+    )";
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Invalid Variable Name true", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+         var true;
+         true = false;
+         return true;
+      }
+    )";
+  REQUIRE_FALSE(ParserHelper::is_parsable(stream));
+}
+//end invalid variable name testing
+
+/* START operator precedence testing
  */
 TEST_CASE("SIP Parser: Addition higher precedence than conditionals", "[SIP Parser]") {
   std::stringstream stream;
@@ -553,7 +624,18 @@ TEST_CASE("SIP Parser: Prefix length operator higher precedence than modulus", "
   stream << R"(main() { var x; x = [4]; return #x % 2;})";
   std::string expected = "(expr (expr # (expr x)) % (expr 2))";
   std::string tree = ParserHelper::parsetree(stream);
-//  std::cout << tree;
+  REQUIRE(tree.find(expected) != std::string::npos);
+}
+
+TEST_CASE("SIP Parser: Prefix length operator lower precedence to array subscript", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(main() {
+                var x;
+                x = [4, 5, [6, 7, 8, 9]];
+                return #x[2];
+              })";
+  std::string expected = "(expr # (expr (expr x) [ (expr 2) ]))";
+  std::string tree = ParserHelper::parsetree(stream);
   REQUIRE(tree.find(expected) != std::string::npos);
 }
 
@@ -573,3 +655,5 @@ TEST_CASE("SIP Parser: Array subscripting higher precedence than arithmetic nega
   std::string tree = ParserHelper::parsetree(stream);
   REQUIRE(tree.find(expected) != std::string::npos);
 }
+/* END operator precedence testing
+ */
