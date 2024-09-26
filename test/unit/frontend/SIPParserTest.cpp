@@ -434,8 +434,21 @@ TEST_CASE("SIP Parser: Unary array length operator on explicit array", "[SIP Par
   stream << R"(
       func() {
         var x;
-        x = #[];
+        x = #[3];
         return x ? 1 : 0;
+      }
+    )";
+  REQUIRE(ParserHelper::is_parsable(stream));
+}
+
+TEST_CASE("SIP Parser: Unary array length operator on empty array", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(
+      func() {
+        var x, checker;
+        x = #[];
+        checker = x == 0;
+        return checker;
       }
     )";
   REQUIRE(ParserHelper::is_parsable(stream));
