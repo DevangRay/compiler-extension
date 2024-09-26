@@ -602,11 +602,20 @@ TEST_CASE("SIP Parser: Modulus higher precedence than add", "[SIP Parser]") {
   REQUIRE(tree.find(expected) != std::string::npos);
 }
 
-TEST_CASE("SIP Parser: Modulus same precedence as Multiply", "[SIP Parser]") {
+TEST_CASE("SIP Parser: Modulus same precedence as Multiply, multiply first", "[SIP Parser]") {
   std::stringstream stream;
   stream << R"(main() { return 1 * 2 % 3; })";
   //multiply expression is higher because it comes first here
   std::string expected = "(expr (expr (expr 1) * (expr 2)) % (expr 3))";
+  std::string tree = ParserHelper::parsetree(stream);
+  REQUIRE(tree.find(expected) != std::string::npos);
+}
+
+TEST_CASE("SIP Parser: Modulus same precedence as Multiply, mod first", "[SIP Parser]") {
+  std::stringstream stream;
+  stream << R"(main() { return 1 % 2 * 3; })";
+  //multiple expression is lower because it comes second here
+  std::string expected = "(expr (expr (expr 1) % (expr 2)) * (expr 3))";
   std::string tree = ParserHelper::parsetree(stream);
   REQUIRE(tree.find(expected) != std::string::npos);
 }
