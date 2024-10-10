@@ -4,6 +4,31 @@
 
 #include <iostream>
 
+//SIP EXTENSION
+
+TEST_CASE("ASTPrinterTest: false test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() { var x; x = false; return 0; }
+    )";
+
+  std::vector<std::string> expected{"x = false;", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+//    std::cout << actual;
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+// END SIP
+
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
   std::stringstream stream;
   stream << R"(
@@ -13,7 +38,6 @@ TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
   std::vector<std::string> expected{"output 42;", "return 0;"};
 
   auto ast = ASTHelper::build_ast(stream);
-
   auto f = ast->findFunctionByName("foo");
 
   int i = 0;
@@ -24,6 +48,7 @@ TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
     REQUIRE(actual == expected.at(i++));
   }
 }
+
 
 TEST_CASE("ASTPrinterTest: function printers", "[ASTNodePrint]") {
   std::stringstream stream;
