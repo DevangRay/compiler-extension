@@ -6,6 +6,25 @@
 
 #include <iostream>
 
+//SIP Expansion
+TEST_CASE("PrettyPrinter: Test false expression", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(
+      short() {
+        var x;
+        x = false;
+        return x;
+      }
+    )";
+
+  std::stringstream devnull;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), devnull, ' ', 4);
+//  REQUIRE(true);
+}
+
+//End SIP
+
 TEST_CASE("PrettyPrinter: Test default constructor", "[PrettyPrinter]") {
   std::stringstream stream;
   stream << R"(

@@ -77,6 +77,12 @@ void PrettyPrinter::endVisit(ASTFunction *element) {
   indentLevel--;
 }
 
+//SIP Expansion
+void PrettyPrinter::endVisit(ASTFalseExpr *element) {
+  visitResults.push_back("false");
+}
+//END SIP
+
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {
   visitResults.push_back(std::to_string(element->getValue()));
 }
