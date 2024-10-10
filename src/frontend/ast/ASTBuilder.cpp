@@ -303,6 +303,17 @@ Any ASTBuilder::visitDeRefExpr(TIPParser::DeRefExprContext *ctx) {
   return "";
 } // LCOV_EXCL_LINE
 
+Any ASTBuilder::visitFalseExpr(TIPParser::FalseExprContext *ctx) {
+  visitedExpr = std::make_shared<ASTFalseExpr>();
+
+  LOG_S(1) << "Built AST node " << *visitedExpr;
+
+  // Set source location
+  visitedExpr->setLocation(ctx->getStart()->getLine(),
+                           ctx->getStart()->getCharPositionInLine());
+  return "";
+} // LCOV_EXCL_LINE
+
 Any ASTBuilder::visitNullExpr(TIPParser::NullExprContext *ctx) {
   visitedExpr = std::make_shared<ASTNullExpr>();
 
