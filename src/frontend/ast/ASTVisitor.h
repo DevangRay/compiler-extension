@@ -68,4 +68,7 @@ public:
   virtual void endVisit(ASTErrorStmt *element) {}
   virtual bool visit(ASTBlockStmt *element) { return true; }
   virtual void endVisit(ASTBlockStmt *element) {}
+
+  virtual bool visit(ASTFalseExpr *element) { return true; }
+  virtual void endVisit(ASTFalseExpr *element) {}
 };
