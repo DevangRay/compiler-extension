@@ -20,7 +20,44 @@ TEST_CASE("PrettyPrinter: Test false expression", "[PrettyPrinter]") {
   std::stringstream devnull;
   auto ast = ASTHelper::build_ast(stream);
   PrettyPrinter::print(ast.get(), devnull, ' ', 4);
-//  REQUIRE(true);
+  REQUIRE(true);
+}
+
+TEST_CASE("PrettyPrinter: Test true expression", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(
+      short() {
+        var x;
+        x = true;
+        return x;
+      }
+    )";
+
+  std::stringstream devnull;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), devnull, ' ', 4);
+  REQUIRE(true);
+}
+
+TEST_CASE("PrettyPrinter: Test true/false print", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, y; x = false; y = true; return x; })";
+
+  std::string expected = R"(prog()
+{
+  var x, y;
+  x = false;
+  y = true;
+  return x;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
 }
 
 //End SIP

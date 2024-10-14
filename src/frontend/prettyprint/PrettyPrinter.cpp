@@ -81,6 +81,10 @@ void PrettyPrinter::endVisit(ASTFunction *element) {
 void PrettyPrinter::endVisit(ASTFalseExpr *element) {
   visitResults.push_back("false");
 }
+
+void PrettyPrinter::endVisit(ASTTrueExpr *element) {
+  visitResults.push_back("true");
+}
 //END SIP
 
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {

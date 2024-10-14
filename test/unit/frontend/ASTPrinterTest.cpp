@@ -27,6 +27,25 @@ TEST_CASE("ASTPrinterTest: false test", "[ASTNodePrint]") {
   }
 }
 
+TEST_CASE("ASTPrinterTest: true test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() { var x; x = true; return 0; }
+    )";
+
+  std::vector<std::string> expected{"x = true;", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
