@@ -58,8 +58,8 @@ public:
   virtual void endVisit(ASTFalseExpr *element) override;
   virtual void endVisit(ASTTrueExpr *element) override;
   virtual void endVisit(ASTNegExpr *element) override;
-//  virtual bool visit(ASTTernaryExpr *element) override;
   virtual void endVisit(ASTTernaryExpr *element) override;
+  virtual void endVisit(ASTArrayExpr *element) override;
 
 private:
   std::string indent() const;

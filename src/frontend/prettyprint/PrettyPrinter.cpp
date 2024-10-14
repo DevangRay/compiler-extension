@@ -106,6 +106,12 @@ void PrettyPrinter::endVisit(ASTTernaryExpr *element) {
 
   visitResults.push_back(ternaryExprString);
 }
+
+void PrettyPrinter::endVisit(ASTArrayExpr *element) {
+  auto actualsString =
+      joinWithDelim(visitResults, ", ", element->getActuals().size(), 1);
+  visitResults.push_back("[ " + actualsString + " ]");
+}
 //END SIP
 
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {

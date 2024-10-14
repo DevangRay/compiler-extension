@@ -198,6 +198,49 @@ TEST_CASE("PrettyPrinter: Test nested ternary expressions", "[PrettyPrinter]") {
   expected = GeneralHelper::removeTrailingWhitespace(expected);
   REQUIRE(ppString == expected);
 }
+
+TEST_CASE("PrettyPrinter: Test literal array construction, empty", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x; x = []; return x; })";
+
+  std::string expected = R"(prog()
+{
+  var x;
+  x = [  ];
+  return x;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}
+
+TEST_CASE("PrettyPrinter: Test literal array construction", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, y, z; y = true; z = 4; x = [y and 1, 0, z/5, 4%1, &x]; return x; })";
+
+  std::string expected = R"(prog()
+{
+  var x, y, z;
+  y = true;
+  z = 4;
+  x = [ (y and 1), 0, (z / 5), (4 % 1), &x ];
+  return x;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+//  std::cout << ppString;
+  REQUIRE(ppString == expected);
+}
 //End SIP
 
 TEST_CASE("PrettyPrinter: Test default constructor", "[PrettyPrinter]") {
