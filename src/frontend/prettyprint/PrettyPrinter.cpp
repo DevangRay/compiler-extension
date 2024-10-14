@@ -85,6 +85,12 @@ void PrettyPrinter::endVisit(ASTFalseExpr *element) {
 void PrettyPrinter::endVisit(ASTTrueExpr *element) {
   visitResults.push_back("true");
 }
+
+void PrettyPrinter::endVisit(ASTNegExpr *element) {
+  std::string init = visitResults.back();
+  visitResults.pop_back();
+  visitResults.push_back("- " + init);
+}
 //END SIP
 
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {
