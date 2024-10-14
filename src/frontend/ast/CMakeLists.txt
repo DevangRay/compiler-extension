@@ -62,6 +62,8 @@ target_sources(
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTTrueExpr.h
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTNegExpr.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTNegExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTTernaryExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTTernaryExpr.h
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTVisitor.h
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTBuilder.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTBuilder.h

@@ -79,4 +79,7 @@ public:
 
   virtual bool visit(ASTNegExpr *element) { return true; }
   virtual void endVisit(ASTNegExpr *element) {}
+
+  virtual bool visit(ASTTernaryExpr *element) { return true; }
+  virtual void endVisit(ASTTernaryExpr *element) {}
 };
