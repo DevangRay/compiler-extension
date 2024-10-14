@@ -19,6 +19,9 @@ std::string ASTBuilder::opString(int op) {
   case TIPParser::DIV:
     opStr = "/";
     break;
+  case TIPParser::MOD:
+      opStr = "%";
+    break;
   case TIPParser::ADD:
     opStr = "+";
     break;
