@@ -247,6 +247,26 @@ TEST_CASE("ASTTernaryExprTest: Test methods of AST subtype.",
     o3 << *expr->getElse();
     REQUIRE(o3.str() == "7");
 }
+
+TEST_CASE("ASTArrayExprTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() {
+         return [1, 2, 3];
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto expr = ASTHelper::find_node<ASTArrayExpr>(ast);
+
+  std::stringstream o1;
+//  o1 << *expr->getFunction();
+//  REQUIRE(o1.str() == "bar");
+
+  auto arguments = expr->getActuals();
+  REQUIRE(arguments.size() == 3);
+}
 //END SIP EXTENSION
 
 TEST_CASE("ASTAccessExprTest: Test methods of AST subtype.",

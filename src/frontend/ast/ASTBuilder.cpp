@@ -289,6 +289,24 @@ Any ASTBuilder::visitFunAppExpr(TIPParser::FunAppExprContext *ctx) {
   return "";
 }
 
+Any ASTBuilder::visitArrayExpr(TIPParser::ArrayExprContext *ctx) {
+  std::vector<std::shared_ptr<ASTExpr>> actuals;
+
+  for (auto e : ctx->expr()) {
+    visit(e);
+    actuals.push_back(visitedExpr);
+  }
+
+  visitedExpr = std::make_shared<ASTArrayExpr>(actuals);
+
+  LOG_S(1) << "Built AST node " << *visitedExpr;
+
+  // Set source location
+  visitedExpr->setLocation(ctx->getStart()->getLine(),
+                           ctx->getStart()->getCharPositionInLine());
+  return "";
+}
+
 Any ASTBuilder::visitAllocExpr(TIPParser::AllocExprContext *ctx) {
   visit(ctx->expr());
   visitedExpr = std::make_shared<ASTAllocExpr>(visitedExpr);
