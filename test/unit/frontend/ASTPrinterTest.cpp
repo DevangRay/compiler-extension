@@ -161,18 +161,12 @@ TEST_CASE("ASTPrinterTest: ternary expression test", "[ASTNodePrint]") {
       }
     )";
 
-  std::vector<std::string> expected{"x", "(x*6)", "(y/6)"};
-
   auto ast = ASTHelper::build_ast(stream);
   auto f = ast->findFunctionByName("fun");
 
   int i = 0;
   int numStmts = f->getStmts().size() - 1; // skip the return
   for (auto s: f->getStmts()) {
-//      stream = std::stringstream();
-//      stream << *s;
-//      auto actual = stream.str();
-//      std::cout << actual;
       auto assignStmt = dynamic_cast<ASTAssignStmt *>(s);
       auto ternaryExpr = dynamic_cast<ASTTernaryExpr *>(assignStmt->getRHS());
 
@@ -195,6 +189,36 @@ TEST_CASE("ASTPrinterTest: ternary expression test", "[ASTNodePrint]") {
       i++;
       if (i == numStmts)
          break;
+  }
+}
+
+TEST_CASE("ASTPrinterTest: literal array constructor test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      fun() {
+        var x;
+        x = [2, 4, -3, 51];
+        return x;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("fun");
+
+  int i = 0;
+  int numStmts = f->getStmts().size() - 1; // skip the return
+  for (auto s: f->getStmts()) {
+    auto assignStmt = dynamic_cast<ASTAssignStmt *>(s);
+    auto arrayExpr = dynamic_cast<ASTArrayExpr *>(assignStmt->getRHS());
+
+    stream = std::stringstream();
+    stream << *arrayExpr;
+    auto actual = stream.str();
+    REQUIRE(actual == "[ 2, 4, -3, 51 ]");
+
+    i++;
+    if (i == numStmts)
+      break;
   }
 }
 // END SIP

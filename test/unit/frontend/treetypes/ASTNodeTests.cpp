@@ -261,8 +261,6 @@ TEST_CASE("ASTArrayExprTest: Test methods of AST subtype.",
   auto expr = ASTHelper::find_node<ASTArrayExpr>(ast);
 
   std::stringstream o1;
-//  o1 << *expr->getFunction();
-//  REQUIRE(o1.str() == "bar");
 
   auto arguments = expr->getActuals();
   REQUIRE(arguments.size() == 3);
