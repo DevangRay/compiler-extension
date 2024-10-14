@@ -219,6 +219,34 @@ TEST_CASE("ASTNegExprTest: Test methods of AST subtype.",
     o1 << *expr->getInitializer();
     REQUIRE(o1.str() == "(x-3)");
 }
+
+TEST_CASE("ASTTernaryExprTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo(c) {
+         var x, c;
+         c = 17;
+         x = c > 0 ? 13 : 7;
+         return x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto expr = ASTHelper::find_node<ASTTernaryExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *expr->getCondition();
+    REQUIRE(o1.str() == "(c>0)");
+
+    std::stringstream o2;
+    o2 << *expr->getThen();
+    REQUIRE(o2.str() == "13");
+
+    std::stringstream o3;
+    o3 << *expr->getElse();
+    REQUIRE(o3.str() == "7");
+}
 //END SIP EXTENSION
 
 TEST_CASE("ASTAccessExprTest: Test methods of AST subtype.",
