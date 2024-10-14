@@ -221,6 +221,36 @@ TEST_CASE("ASTPrinterTest: literal array constructor test", "[ASTNodePrint]") {
       break;
   }
 }
+
+TEST_CASE("ASTPrinterTest: empty literal array constructor test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      fun() {
+        var x;
+        x = [];
+        return x;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("fun");
+
+  int i = 0;
+  int numStmts = f->getStmts().size() - 1; // skip the return
+  for (auto s: f->getStmts()) {
+    auto assignStmt = dynamic_cast<ASTAssignStmt *>(s);
+    auto arrayExpr = dynamic_cast<ASTArrayExpr *>(assignStmt->getRHS());
+
+    stream = std::stringstream();
+    stream << *arrayExpr;
+    auto actual = stream.str();
+    REQUIRE(actual == "[  ]");
+
+    i++;
+    if (i == numStmts)
+      break;
+  }
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
