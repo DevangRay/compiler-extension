@@ -60,6 +60,25 @@ TEST_CASE("ASTBinaryExprTest: SIP Extension for %",
     o3 << expr->getOp();
     REQUIRE(o3.str() == "%");
 }
+
+TEST_CASE("ASTNegExprTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+         var x;
+         x = 69;
+         return -(x-3);
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto expr = ASTHelper::find_node<ASTNegExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *expr->getInitializer();
+    REQUIRE(o1.str() == "(x-3)");
+}
 //END SIP EXTENSION
 
 TEST_CASE("ASTAccessExprTest: Test methods of AST subtype.",

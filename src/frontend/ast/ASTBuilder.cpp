@@ -282,6 +282,18 @@ Any ASTBuilder::visitAllocExpr(TIPParser::AllocExprContext *ctx) {
   return "";
 } // LCOV_EXCL_LINE
 
+Any ASTBuilder::visitNegExpr(TIPParser::NegExprContext *ctx) {
+  visit(ctx->expr());
+  visitedExpr = std::make_shared<ASTNegExpr>(visitedExpr);
+
+  LOG_S(1) << "Built AST node " << *visitedExpr;
+
+  // Set source location
+  visitedExpr->setLocation(ctx->getStart()->getLine(),
+                           ctx->getStart()->getCharPositionInLine());
+  return "";
+} // LCOV_EXCL_LINE
+
 Any ASTBuilder::visitRefExpr(TIPParser::RefExprContext *ctx) {
   visit(ctx->expr());
   visitedExpr = std::make_shared<ASTRefExpr>(visitedExpr);

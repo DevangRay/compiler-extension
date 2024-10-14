@@ -37,3 +37,4 @@
 
 #include "ASTFalseExpr.h"
 #include "ASTTrueExpr.h"
+#include "ASTNegExpr.h"
