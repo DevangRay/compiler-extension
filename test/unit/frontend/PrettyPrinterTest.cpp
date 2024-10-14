@@ -146,6 +146,58 @@ TEST_CASE("PrettyPrinter: Test LT (<), LTE (<=), and GTE (>=) binary expressions
   expected = GeneralHelper::removeTrailingWhitespace(expected);
   REQUIRE(ppString == expected);
 }
+
+TEST_CASE("PrettyPrinter: Test ternary expressions", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, y, z; y = true; z = false; x = y ? y : z; return x; })";
+
+  std::string expected = R"(prog()
+{
+  var x, y, z;
+  y = true;
+  z = false;
+  x = (y ? y : z);
+  return x;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}
+
+TEST_CASE("PrettyPrinter: Test nested ternary expressions", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(
+      prog() {
+        var x, y, z;
+        x = 9;
+        y = -1;
+        z = 400;
+        return x > y ? y > z ? y - z : y + z : (x <= z ? z * x : x + y + z * z);
+      }
+    )";
+
+  std::string expected = R"(prog()
+{
+  var x, y, z;
+  x = 9;
+  y = -1;
+  z = 400;
+  return ((x > y) ? ((y > z) ? (y - z) : (y + z)) : ((x <= z) ? (z * x) : ((x + y) + (z * z))));
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}
 //End SIP
 
 TEST_CASE("PrettyPrinter: Test default constructor", "[PrettyPrinter]") {

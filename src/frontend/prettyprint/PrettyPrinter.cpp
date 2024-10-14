@@ -91,6 +91,21 @@ void PrettyPrinter::endVisit(ASTNegExpr *element) {
   visitResults.pop_back();
   visitResults.push_back("- " + init);
 }
+
+void PrettyPrinter::endVisit(ASTTernaryExpr *element) {
+  std::string elseString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string thenString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string condString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string ternaryExprString = "(" + condString + " ? " + thenString + " : " + elseString + ")";
+
+  visitResults.push_back(ternaryExprString);
+}
 //END SIP
 
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {
