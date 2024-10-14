@@ -32,6 +32,34 @@ TEST_CASE("ASTTrueExpr test", "[ASTNodes]") {
 
     REQUIRE(expr != nullptr);
 }
+
+TEST_CASE("ASTBinaryExprTest: SIP Extension for %",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+         var x, y;
+         y = input;
+         x = x % y;
+         return x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto expr = ASTHelper::find_node<ASTBinaryExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *expr->getLeft();
+    REQUIRE(o1.str() == "x");
+
+    std::stringstream o2;
+    o2 << *expr->getRight();
+    REQUIRE(o2.str() == "y");
+
+    std::stringstream o3;
+    o3 << expr->getOp();
+    REQUIRE(o3.str() == "%");
+}
 //END SIP EXTENSION
 
 TEST_CASE("ASTAccessExprTest: Test methods of AST subtype.",

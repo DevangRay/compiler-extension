@@ -46,6 +46,20 @@ TEST_CASE("ASTPrinterTest: true test", "[ASTNodePrint]") {
     REQUIRE(actual == expected.at(i++));
   }
 }
+
+TEST_CASE("ASTPrinterTest: % test", "[ASTNodePrint]") {
+  auto num_literal = std::make_shared<ASTNumberExpr>(29);
+  auto var = std::make_shared<ASTVariableExpr>("y");
+
+  // Here we just use the default constructor
+  ASTBinaryExpr yplustwentynine("%", std::move(var), std::move(num_literal));
+
+  std::stringstream stream;
+  stream << yplustwentynine;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(y%29)");
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
