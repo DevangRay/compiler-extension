@@ -29,7 +29,9 @@ add_library(coverage_config INTERFACE
         src/frontend/ast/treetypes/ASTTrueExpr.h
         src/frontend/ast/treetypes/ASTTrueExpr.cpp
         src/frontend/ast/treetypes/ASTNegExpr.h
-        src/frontend/ast/treetypes/ASTNegExpr.cpp)
+        src/frontend/ast/treetypes/ASTNegExpr.cpp
+        src/frontend/ast/treetypes/ASTTernaryExpr.h
+        src/frontend/ast/treetypes/ASTTernaryExpr.cpp)
 
 option(CODE_COVERAGE "Enable coverage reporting." ON)
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
