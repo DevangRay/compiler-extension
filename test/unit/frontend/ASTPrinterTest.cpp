@@ -60,6 +60,26 @@ TEST_CASE("ASTPrinterTest: % test", "[ASTNodePrint]") {
 
   REQUIRE(actual == "(y%29)");
 }
+
+TEST_CASE("ASTPrinterTest: negated expression test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() { var x, y; x = 17; y = -x; return y; }
+    )";
+
+  std::vector<std::string> expected{"x = 17;", "y = - x;", "return y;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
