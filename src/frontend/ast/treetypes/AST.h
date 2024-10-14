@@ -39,3 +39,4 @@
 #include "ASTTrueExpr.h"
 #include "ASTNegExpr.h"
 #include "ASTTernaryExpr.h"
+#include "ASTArrayExpr.h"
