@@ -61,6 +61,66 @@ TEST_CASE("ASTBinaryExprTest: SIP Extension for %",
     REQUIRE(o3.str() == "%");
 }
 
+TEST_CASE("ASTBinaryExprTest: and operator", "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+         var x, y, answer;
+         x = true;
+         y = false;
+         answer = x and y;
+         return answer;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto expr = ASTHelper::find_node<ASTBinaryExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *expr->getLeft();
+    REQUIRE(o1.str() == "x");
+
+    std::stringstream o2;
+    o2 << *expr->getRight();
+    REQUIRE(o2.str() == "y");
+
+    std::stringstream o3;
+    o3 << expr->getOp();
+    REQUIRE(o3.str() == "and");
+}
+
+//TEST_CASE("ASTBinaryExprTest: Test extended boolean operators (and, or, <, <=, >=).",
+//          "[ASTNodes]") {
+//    std::stringstream stream;
+//    stream << R"(
+//      foo() {
+//         var x, y, x1, y1, answer;
+//         var x = true;
+//         var y = false;
+//
+//         if (x or y) answer = false;
+//         if (x1 < y1) answer = true;
+//         if (x1 <= y1) answer = true;
+//         if (x1 > y1) answer = false;
+//         if (x1 >= y1) answer = false;
+//         return answer;
+//      }
+//    )";
+//
+//    auto ast = ASTHelper::build_ast(stream);
+//    auto fun = ASTHelper::find_node<ASTFunction>(ast);
+//
+//    std::stringstream o1;
+//    o1 << *fun->getDecl();
+//    REQUIRE(o1.str() == "foo");
+//
+//    REQUIRE(fun->getName() == "foo");
+//    REQUIRE(!fun->isPoly());
+//    REQUIRE(fun->getFormals().size() == 2);
+//    REQUIRE(fun->getDeclarations().size() == 2);
+//    REQUIRE(fun->getStmts().size() == 3);
+//}
+
 TEST_CASE("ASTNegExprTest: Test methods of AST subtype.",
           "[ASTNodes]") {
     std::stringstream stream;

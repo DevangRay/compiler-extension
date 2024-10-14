@@ -46,12 +46,6 @@ std::string ASTBuilder::opString(int op) {
   case TIPParser::NE:
     opStr = "!=";
     break;
-  case TIPParser::AND:
-      opStr = "and";
-    break;
-  case TIPParser::OR:
-      opStr = "or";
-    break;
   default:
     throw std::runtime_error(
         "unknown operator :" +
@@ -215,6 +209,16 @@ Any ASTBuilder::visitMultiplicativeExpr(
 
 Any ASTBuilder::visitEqualityExpr(TIPParser::EqualityExprContext *ctx) {
   visitBinaryExpr(ctx, opString(ctx->op->getType()));
+  return "";
+} // LCOV_EXCL_LINE
+
+Any ASTBuilder::visitAndExpr(TIPParser::AndExprContext *ctx) {
+  visitBinaryExpr(ctx, "and");
+  return "";
+} // LCOV_EXCL_LINE
+
+Any ASTBuilder::visitOrExpr(TIPParser::OrExprContext *ctx) {
+  visitBinaryExpr(ctx, "or");
   return "";
 } // LCOV_EXCL_LINE
 
