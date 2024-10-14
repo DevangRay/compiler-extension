@@ -150,6 +150,53 @@ TEST_CASE("ASTPrinterTest: GTE (>=) test", "[ASTNodePrint]") {
 
   REQUIRE(actual == "(x>=-1)");
 }
+
+TEST_CASE("ASTPrinterTest: ternary expression test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      fun() {
+        var x, y, z;
+        z = x ? x * 6 : y / 6;
+        return z;
+      }
+    )";
+
+  std::vector<std::string> expected{"x", "(x*6)", "(y/6)"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("fun");
+
+  int i = 0;
+  int numStmts = f->getStmts().size() - 1; // skip the return
+  for (auto s: f->getStmts()) {
+//      stream = std::stringstream();
+//      stream << *s;
+//      auto actual = stream.str();
+//      std::cout << actual;
+      auto assignStmt = dynamic_cast<ASTAssignStmt *>(s);
+      auto ternaryExpr = dynamic_cast<ASTTernaryExpr *>(assignStmt->getRHS());
+
+      stream = std::stringstream();
+      stream << *ternaryExpr->getCondition();
+      auto actual_cond = stream.str();
+
+      stream = std::stringstream();
+      stream << *ternaryExpr->getThen();
+      auto actual_then = stream.str();
+
+      stream = std::stringstream();
+      stream << *ternaryExpr->getElse();
+      auto actual_else = stream.str();
+
+      REQUIRE(actual_cond == "x");
+      REQUIRE(actual_then == "(x*6)");
+      REQUIRE(actual_else == "(y/6)");
+
+      i++;
+      if (i == numStmts)
+         break;
+  }
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
