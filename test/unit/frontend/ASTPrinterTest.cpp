@@ -80,6 +80,76 @@ TEST_CASE("ASTPrinterTest: negated expression test", "[ASTNodePrint]") {
     REQUIRE(actual == expected.at(i++));
   }
 }
+
+TEST_CASE("ASTPrinterTest: and test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto vary = std::make_shared<ASTVariableExpr>("y");
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xandy("and", std::move(varx), std::move(vary));
+
+  std::stringstream stream;
+  stream << xandy;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(xandy)");
+}
+
+TEST_CASE("ASTPrinterTest: or test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto vary = std::make_shared<ASTVariableExpr>("y");
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xory("or", std::move(varx), std::move(vary));
+
+  std::stringstream stream;
+  stream << xory;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(xory)");
+}
+
+TEST_CASE("ASTPrinterTest: LT (<) test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto one = std::make_shared<ASTNumberExpr>(1);
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xltone("<", std::move(varx), std::move(one));
+
+  std::stringstream stream;
+  stream << xltone;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(x<1)");
+}
+
+TEST_CASE("ASTPrinterTest: LTE (<=) test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto negone = std::make_shared<ASTNumberExpr>(-1);
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xltenegone("<=", std::move(varx), std::move(negone));
+
+  std::stringstream stream;
+  stream << xltenegone;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(x<=-1)");
+}
+
+TEST_CASE("ASTPrinterTest: GTE (>=) test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto negone = std::make_shared<ASTNumberExpr>(-1);
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xgtenegone(">=", std::move(varx), std::move(negone));
+
+  std::stringstream stream;
+  stream << xgtenegone;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(x>=-1)");
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
