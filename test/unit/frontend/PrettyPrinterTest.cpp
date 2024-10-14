@@ -81,16 +81,17 @@ TEST_CASE("PrettyPrinter: Test modulo expr", "[PrettyPrinter]") {
   REQUIRE(ppString == expected);
 }
 
-TEST_CASE("PrettyPrinter: Test negated expression", "[PrettyPrinter]") {
+TEST_CASE("PrettyPrinter: Test and op binary expression", "[PrettyPrinter]") {
   std::stringstream stream;
-  stream << R"(prog() { var x, y; y = 12; x = -(y % 3 / 4) * y; return 0; })";
+  stream << R"(prog() { var x, y, z; x = true; y = true; z = x and y; return z; })";
 
   std::string expected = R"(prog()
 {
-  var x, y;
-  y = 12;
-  x = (- ((y % 3) / 4) * y);
-  return 0;
+  var x, y, z;
+  x = true;
+  y = true;
+  z = (x and y);
+  return z;
 }
 )";
 
@@ -102,6 +103,49 @@ TEST_CASE("PrettyPrinter: Test negated expression", "[PrettyPrinter]") {
   REQUIRE(ppString == expected);
 }
 
+TEST_CASE("PrettyPrinter: Test or op binary expression", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, y, z; x = true; y = true; z = x or y; return z; })";
+
+  std::string expected = R"(prog()
+{
+  var x, y, z;
+  x = true;
+  y = true;
+  z = (x or y);
+  return z;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}
+
+TEST_CASE("PrettyPrinter: Test LT (<), LTE (<=), and GTE (>=) binary expressions", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, y, z; x = -9; y = 9; z = 555; return x < y <= z >= -1; })";
+
+  std::string expected = R"(prog()
+{
+  var x, y, z;
+  x = -9;
+  y = 9;
+  z = 555;
+  return (((x < y) <= z) >= -1);
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}
 //End SIP
 
 TEST_CASE("PrettyPrinter: Test default constructor", "[PrettyPrinter]") {
