@@ -5,8 +5,7 @@
 #include <iostream>
 
 //SIP EXTENSTION
-TEST_CASE("ASTFalseExprTest: Test methods of AST subtype.",
-          "[ASTNodes]") {
+TEST_CASE("ASTFalseExpr test", "[ASTNodes]") {
     std::stringstream stream;
     stream << R"(
       foo() {
@@ -20,6 +19,19 @@ TEST_CASE("ASTFalseExprTest: Test methods of AST subtype.",
     REQUIRE(expr != nullptr);
 }
 
+TEST_CASE("ASTTrueExpr test", "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+         return true;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto expr = ASTHelper::find_node<ASTTrueExpr>(ast);
+
+    REQUIRE(expr != nullptr);
+}
 //END SIP EXTENSION
 
 TEST_CASE("ASTAccessExprTest: Test methods of AST subtype.",

@@ -57,6 +57,7 @@ public:
   Any visitNullExpr(TIPParser::NullExprContext *ctx) override;
 
   Any visitFalseExpr(TIPParser::FalseExprContext *ctx) override;
+  Any visitTrueExpr(TIPParser::TrueExprContext *ctx) override;
 
   Any visitRecordExpr(TIPParser::RecordExprContext *ctx) override;
   Any visitFieldExpr(TIPParser::FieldExprContext *ctx) override;
