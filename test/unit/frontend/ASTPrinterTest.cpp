@@ -251,6 +251,59 @@ TEST_CASE("ASTPrinterTest: empty literal array constructor test", "[ASTNodePrint
       break;
   }
 }
+
+TEST_CASE("ASTPrinterTest: for range statement with step", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() {
+         var y;
+         for (x : 0 .. 10 by 2) {
+            y = y + x;
+         }
+         return y;
+    }
+    )";
+
+  std::vector<std::string> expected{"for ( x : 0 .. 10 by 2 ) { y = (y+x); }", "return y;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+TEST_CASE("ASTPrinterTest: for range statement, no step", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() {
+         var y, low;
+         low = 1241;
+         for (x : low .. low * 4) {
+            y = y + x;
+         }
+         return y;
+    }
+    )";
+
+  std::vector<std::string> expected{"low = 1241;", "for ( x : low .. (low*4) ) { y = (y+x); }", "return y;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
