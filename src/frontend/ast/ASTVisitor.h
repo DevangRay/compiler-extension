@@ -85,4 +85,7 @@ public:
 
   virtual bool visit(ASTArrayExpr *element) { return true; }
   virtual void endVisit(ASTArrayExpr *element) {}
+
+  virtual bool visit(ASTForRangeStmt *element) { return true; }
+  virtual void endVisit(ASTForRangeStmt *element) {}
 };

@@ -40,3 +40,4 @@
 #include "ASTNegExpr.h"
 #include "ASTTernaryExpr.h"
 #include "ASTArrayExpr.h"
+#include "ASTForRangeStmt.h"
