@@ -265,6 +265,117 @@ TEST_CASE("ASTArrayExprTest: Test methods of AST subtype.",
   auto arguments = expr->getActuals();
   REQUIRE(arguments.size() == 3);
 }
+
+TEST_CASE("ASTForRangeStmtTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+  std::stringstream stream;
+  stream << R"(
+      foo(x) {
+         var y;
+         for (x : 0 .. 10 by 2) {
+            y = y + x;
+         }
+         return y;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto stmt = ASTHelper::find_node<ASTForRangeStmt>(ast);
+
+  std::stringstream o1;
+  o1 << *stmt->getInitializer();
+  REQUIRE(o1.str() == "x");
+
+  std::stringstream o2;
+  o2 << *stmt->getRangeStart();
+  REQUIRE(o2.str() == "0");
+
+  std::stringstream o3;
+  o3 << *stmt->getRangeEnd();
+  REQUIRE(o3.str() == "10");
+
+  std::stringstream o4;
+  o4 << *stmt->getStep();
+  REQUIRE(o4.str() == "2");
+
+  std::stringstream o5;
+  o5 << *stmt->getBody();
+  REQUIRE(o5.str() == "{ y = (y+x); }");
+}
+
+TEST_CASE("ASTForRangeStmtTest: Test methods of AST subtype, varied expressoins.",
+          "[ASTNodes]") {
+  std::stringstream stream;
+  stream << R"(
+      foo(x) {
+         var x, y, i, low;
+         x = 4;
+         low = 12309123 % 4;
+         for (i : low .. low + 16 by x * 6) {
+            y = y + x;
+         }
+         return y;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto stmt = ASTHelper::find_node<ASTForRangeStmt>(ast);
+
+  std::stringstream o1;
+  o1 << *stmt->getInitializer();
+  REQUIRE(o1.str() == "i");
+
+  std::stringstream o2;
+  o2 << *stmt->getRangeStart();
+  REQUIRE(o2.str() == "low");
+
+  std::stringstream o3;
+  o3 << *stmt->getRangeEnd();
+  REQUIRE(o3.str() == "(low+16)");
+
+  std::stringstream o4;
+  o4 << *stmt->getStep();
+  REQUIRE(o4.str() == "(x*6)");
+
+  std::stringstream o5;
+  o5 << *stmt->getBody();
+  REQUIRE(o5.str() == "{ y = (y+x); }");
+}
+
+TEST_CASE("ASTForRangeStmtTest: Test methods of AST subtype, no step given.",
+          "[ASTNodes]") {
+  std::stringstream stream;
+  stream << R"(
+      foo(x) {
+         var y;
+         for (x : 0 .. 10) {
+            y = y + x;
+         }
+         return y;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto stmt = ASTHelper::find_node<ASTForRangeStmt>(ast);
+
+  std::stringstream o1;
+  o1 << *stmt->getInitializer();
+  REQUIRE(o1.str() == "x");
+
+  std::stringstream o2;
+  o2 << *stmt->getRangeStart();
+  REQUIRE(o2.str() == "0");
+
+  std::stringstream o3;
+  o3 << *stmt->getRangeEnd();
+  REQUIRE(o3.str() == "10");
+
+  REQUIRE(stmt->getStep() == nullptr);
+
+  std::stringstream o5;
+  o5 << *stmt->getBody();
+  REQUIRE(o5.str() == "{ y = (y+x); }");
+}
 //END SIP EXTENSION
 
 TEST_CASE("ASTAccessExprTest: Test methods of AST subtype.",

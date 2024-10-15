@@ -493,6 +493,36 @@ Any ASTBuilder::visitWhileStmt(TIPParser::WhileStmtContext *ctx) {
   return "";
 }
 
+Any ASTBuilder::visitForRangeStmt(TIPParser::ForRangeStmtContext *ctx) {
+  visit(ctx->expr(0));
+  auto initializer = visitedExpr;
+
+  visit(ctx->expr(1));
+  auto rangestart = visitedExpr;
+
+  visit(ctx->expr(2));
+  auto rangeend = visitedExpr;
+
+  // step is optional
+  std::shared_ptr<ASTExpr> step = nullptr;
+  if (ctx->expr().size() == 4) {
+    visit(ctx->expr(3));
+    step = visitedExpr;
+  }
+
+  visit(ctx->statement());
+  auto body = visitedStmt;
+
+  visitedStmt = std::make_shared<ASTForRangeStmt>(initializer, rangestart, rangeend, step, body);
+
+  LOG_S(1) << "Built AST node " << *visitedStmt;
+
+  // Set source location
+  visitedStmt->setLocation(ctx->getStart()->getLine(),
+                           ctx->getStart()->getCharPositionInLine());
+  return "";
+}
+
 Any ASTBuilder::visitIfStmt(TIPParser::IfStmtContext *ctx) {
   visit(ctx->expr());
   auto cond = visitedExpr;
