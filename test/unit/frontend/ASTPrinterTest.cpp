@@ -264,7 +264,7 @@ TEST_CASE("ASTPrinterTest: for range statement with step", "[ASTNodePrint]") {
     }
     )";
 
-  std::vector<std::string> expected{"for ( x : 0 .. 10 by 2 ) { y = (y+x); }", "return y;"};
+  std::vector<std::string> expected{"for (x : 0 .. 10 by 2) { y = (y+x); }", "return y;"};
 
   auto ast = ASTHelper::build_ast(stream);
   auto f = ast->findFunctionByName("foo");
@@ -291,7 +291,7 @@ TEST_CASE("ASTPrinterTest: for range statement, no step", "[ASTNodePrint]") {
     }
     )";
 
-  std::vector<std::string> expected{"low = 1241;", "for ( x : low .. (low*4) ) { y = (y+x); }", "return y;"};
+  std::vector<std::string> expected{"low = 1241;", "for (x : low .. (low*4)) { y = (y+x); }", "return y;"};
 
   auto ast = ASTHelper::build_ast(stream);
   auto f = ast->findFunctionByName("foo");

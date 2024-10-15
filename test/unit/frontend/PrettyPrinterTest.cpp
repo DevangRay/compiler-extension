@@ -238,7 +238,52 @@ TEST_CASE("PrettyPrinter: Test literal array construction", "[PrettyPrinter]") {
   PrettyPrinter::print(ast.get(), pp, ' ', 2);
   std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
   expected = GeneralHelper::removeTrailingWhitespace(expected);
-//  std::cout << ppString;
+  REQUIRE(ppString == expected);
+}
+
+TEST_CASE("PrettyPrinter: Test for range statement with step", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, i, z; for (i:z-10..z by z/4){ x=x+1; } return x; })";
+
+  std::string expected = R"(prog()
+{
+  var x, i, z;
+  for (i : (z - 10) .. z by (z / 4))
+    {
+      x = (x + 1);
+    }
+  return x;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}
+
+TEST_CASE("PrettyPrinter: Test for range statement without step", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, i, z; for (i:z*2-10..z){ x=x+z; } return x; })";
+
+  std::string expected = R"(prog()
+{
+  var x, i, z;
+  for (i : ((z * 2) - 10) .. z)
+    {
+      x = (x + z);
+    }
+  return x;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
   REQUIRE(ppString == expected);
 }
 //End SIP

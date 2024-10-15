@@ -112,6 +112,42 @@ void PrettyPrinter::endVisit(ASTArrayExpr *element) {
       joinWithDelim(visitResults, ", ", element->getActuals().size(), 1);
   visitResults.push_back("[ " + actualsString + " ]");
 }
+
+bool PrettyPrinter::visit(ASTForRangeStmt *element) {
+  indentLevel++;
+  return true;
+}
+
+void PrettyPrinter::endVisit(ASTForRangeStmt *element) {
+  std::string bodyString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string stepString;
+  if (element->getStep() != nullptr) {
+      stepString = visitResults.back();
+      visitResults.pop_back();
+  }
+
+  std::string rangeEndString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string rangeStartString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string initString = visitResults.back();
+  visitResults.pop_back();
+
+  indentLevel--;
+
+  std::string forRangeString =
+      indent() + "for (" + initString + " : " + rangeStartString + " .. " + rangeEndString;
+  if (element->getStep() != nullptr) {
+      forRangeString += " by " + stepString;
+  }
+  forRangeString += + ") \n" + bodyString;
+
+  visitResults.push_back(forRangeString);
+}
 //END SIP
 
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {

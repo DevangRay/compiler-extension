@@ -19,11 +19,11 @@ void ASTForRangeStmt::accept(ASTVisitor *visitor) {
 }
 
 std::ostream &ASTForRangeStmt::print(std::ostream &out) const {
-    out << "for ( " << *getInitializer() << " : " << *getRangeStart() << " .. " << *getRangeEnd();
+    out << "for (" << *getInitializer() << " : " << *getRangeStart() << " .. " << *getRangeEnd();
     if (getStep() != nullptr) {
         out << " by " << *getStep();
     }
-    out << " ) " << *getBody();
+    out << ") " << *getBody();
 
     return out;
 }

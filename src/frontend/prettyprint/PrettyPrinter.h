@@ -60,6 +60,8 @@ public:
   virtual void endVisit(ASTNegExpr *element) override;
   virtual void endVisit(ASTTernaryExpr *element) override;
   virtual void endVisit(ASTArrayExpr *element) override;
+  virtual bool visit(ASTForRangeStmt *element) override;
+  virtual void endVisit(ASTForRangeStmt *element) override;
 
 private:
   std::string indent() const;
