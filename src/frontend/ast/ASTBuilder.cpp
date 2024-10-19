@@ -614,6 +614,22 @@ Any ASTBuilder::visitForItrStmt(TIPParser::ForItrStmtContext *ctx) {
   return "";
 }
 
+Any ASTBuilder::visitArrayRepExpr(TIPParser::ArrayRepExprContext *ctx) {
+  visit(ctx->expr(0));
+  auto start = visitedExpr;
+  visit(ctx->expr(1));
+  auto end = visitedExpr;
+
+  visitedExpr = std::make_shared<ASTArrayRepExpr>(start, end);
+
+  LOG_S(1) << "Built AST node " << *visitedExpr;
+
+  // Set source location
+  visitedStmt->setLocation(ctx->getStart()->getLine(),
+                           ctx->getStart()->getCharPositionInLine());
+  return "";
+}
+
 Any ASTBuilder::visitOutputStmt(TIPParser::OutputStmtContext *ctx) {
   visit(ctx->expr());
   visitedStmt = std::make_shared<ASTOutputStmt>(visitedExpr);

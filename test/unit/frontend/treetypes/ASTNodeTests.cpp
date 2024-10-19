@@ -972,3 +972,24 @@ TEST_CASE("ASTForItrStmtTest: Test methods of AST subtype.",
     o3 << *stmt->getBody();
     REQUIRE(o3.str() == "{ x = (x-1); }");
 }
+
+TEST_CASE("ASTArrayRepExprTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo(x) {
+          return [x of 10]
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTArrayRepExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getStart();
+    REQUIRE(o1.str() == "x");
+
+    std::stringstream o2;
+    o2 << *stmt->getEnd();
+    REQUIRE(o2.str() == "10");
+}

@@ -76,6 +76,8 @@ target_sources(
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTLogicalNotExpr.h
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTForItrStmt.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTForItrStmt.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayRepExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayRepExpr.h
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTVisitor.h
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTBuilder.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTBuilder.h

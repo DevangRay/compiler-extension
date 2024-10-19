@@ -68,6 +68,7 @@ public:
   Any visitDecrementStmt(TIPParser::DecrementStmtContext *ctx) override;
   Any visitLogicalNotExpr(TIPParser::LogicalNotExprContext *ctx) override;
   Any visitForItrStmt(TIPParser::ForItrStmtContext *ctx) override;
+  Any visitArrayRepExpr(TIPParser::ArrayRepExprContext *ctx) override;
 
   Any visitRecordExpr(TIPParser::RecordExprContext *ctx) override;
   Any visitFieldExpr(TIPParser::FieldExprContext *ctx) override;

@@ -45,3 +45,4 @@
 #include "ASTDecrementStmt.h"
 #include "ASTLogicalNotExpr.h"
 #include "ASTForItrStmt.h"
+#include "ASTArrayRepExpr.h"
