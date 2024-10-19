@@ -822,3 +822,69 @@ TEST_CASE("ASTWhileStmtTest: Test methods of AST subtype.",
     o2 << *stmt->getBody();
     REQUIRE(o2.str() == "{ x = (x-1); }");
 }
+
+// start deliverable 2 tests
+TEST_CASE("ASTIncrementStmtTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+         var x;
+         x = 0;
+         x++;
+        return x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTIncrementStmt>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getArg();
+    std::cout << o1.str();
+
+    REQUIRE(o1.str() == "x");
+}
+
+TEST_CASE("ASTDecrementStmtTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+         var x;
+         x = 0;
+         x--;
+        return x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTDecrementStmt>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getArg();
+    std::cout << o1.str();
+    REQUIRE(o1.str() == "x");
+}
+
+TEST_CASE("ASTDecrementStmtTest: Test methods of AST subtype. using alloc",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+         var x;
+         x = alloc 2;
+         *x--;
+        return x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTDecrementStmt>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getArg();
+    std::cout << o1.str();
+
+    REQUIRE(o1.str() == "(*x)");
+}

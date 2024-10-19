@@ -564,6 +564,28 @@ Any ASTBuilder::visitTernaryExpr(TIPParser::TernaryExprContext *ctx) {
   return "";
 }
 
+Any ASTBuilder::visitIncrementStmt(TIPParser::IncrementStmtContext *ctx){
+  visit(ctx->expr());
+  visitedStmt = std::make_shared<ASTIncrementStmt>(visitedExpr);
+
+  LOG_S(1) << "Built AST node " << *visitedStmt;
+
+  visitedStmt->setLocation(ctx->getStart()->getLine(),
+                         ctx->getStart()->getCharPositionInLine());
+  return "";
+} // LCOV_EXCL_LINE
+
+Any ASTBuilder::visitDecrementStmt(TIPParser::DecrementStmtContext *ctx){
+  visit(ctx->expr());
+  visitedStmt = std::make_shared<ASTDecrementStmt>(visitedExpr);
+
+  LOG_S(1) << "Built AST node " << *visitedStmt;
+
+  visitedStmt->setLocation(ctx->getStart()->getLine(),
+                         ctx->getStart()->getCharPositionInLine());
+  return "";
+} // LCOV_EXCL_LINE
+
 Any ASTBuilder::visitOutputStmt(TIPParser::OutputStmtContext *ctx) {
   visit(ctx->expr());
   visitedStmt = std::make_shared<ASTOutputStmt>(visitedExpr);

@@ -35,7 +35,12 @@ add_library(coverage_config INTERFACE
         src/frontend/ast/treetypes/ASTArrayExpr.h
         src/frontend/ast/treetypes/ASTArrayExpr.cpp
         src/frontend/ast/treetypes/ASTForRangeStmt.h
-        src/frontend/ast/treetypes/ASTForRangeStmt.cpp)
+        src/frontend/ast/treetypes/ASTForRangeStmt.cpp
+        src/frontend/ast/treetypes/ASTDecrementStmt.cpp
+        src/frontend/ast/treetypes/ASTDecrementStmt.h
+        src/frontend/ast/treetypes/ASTIncrementStmt.h
+        src/frontend/ast/treetypes/ASTIncrementStmt.cpp)
+
 
 option(CODE_COVERAGE "Enable coverage reporting." ON)
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

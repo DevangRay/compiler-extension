@@ -64,6 +64,8 @@ public:
   Any visitTernaryExpr(TIPParser::TernaryExprContext *ctx) override;
   Any visitArrayExpr(TIPParser::ArrayExprContext *ctx) override;
   Any visitForRangeStmt(TIPParser::ForRangeStmtContext *ctx) override;
+  Any visitIncrementStmt(TIPParser::IncrementStmtContext *ctx) override;
+  Any visitDecrementStmt(TIPParser::DecrementStmtContext *ctx) override;
 
   Any visitRecordExpr(TIPParser::RecordExprContext *ctx) override;
   Any visitFieldExpr(TIPParser::FieldExprContext *ctx) override;

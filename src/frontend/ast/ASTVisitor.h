@@ -88,4 +88,10 @@ public:
 
   virtual bool visit(ASTForRangeStmt *element) { return true; }
   virtual void endVisit(ASTForRangeStmt *element) {}
+
+  virtual bool visit(ASTDecrementStmt *element) { return true; }
+  virtual void endVisit(ASTDecrementStmt *element) {}
+
+  virtual bool visit(ASTIncrementStmt *element) { return true; }
+  virtual void endVisit(ASTIncrementStmt *element) {}
 };

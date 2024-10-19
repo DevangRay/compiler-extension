@@ -41,3 +41,5 @@
 #include "ASTTernaryExpr.h"
 #include "ASTArrayExpr.h"
 #include "ASTForRangeStmt.h"
+#include "ASTIncrementStmt.h"
+#include "ASTDecrementStmt.h"
