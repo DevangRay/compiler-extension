@@ -841,7 +841,6 @@ TEST_CASE("ASTIncrementStmtTest: Test methods of AST subtype.",
 
     std::stringstream o1;
     o1 << *stmt->getArg();
-    std::cout << o1.str();
 
     REQUIRE(o1.str() == "x");
 }
@@ -863,7 +862,7 @@ TEST_CASE("ASTDecrementStmtTest: Test methods of AST subtype.",
 
     std::stringstream o1;
     o1 << *stmt->getArg();
-    std::cout << o1.str();
+
     REQUIRE(o1.str() == "x");
 }
 
@@ -884,7 +883,63 @@ TEST_CASE("ASTDecrementStmtTest: Test methods of AST subtype. using alloc",
 
     std::stringstream o1;
     o1 << *stmt->getArg();
-    std::cout << o1.str();
 
     REQUIRE(o1.str() == "(*x)");
+}
+
+TEST_CASE("ASTLogicalNotExprTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+        var x;
+        return not x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTLogicalNotExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getArg();
+
+    REQUIRE(o1.str() == "x");
+}
+
+TEST_CASE("ASTLogicalNotExprTest: Test methods of AST subtype. Single argument but and later",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+        var x;
+        return not x and true;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTLogicalNotExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getArg();
+
+    REQUIRE(o1.str() == "x");
+}
+
+TEST_CASE("ASTLogicalNotExprTest: Test methods of AST subtype. Parenthesized argument",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo() {
+        var x;
+        return not (x and true);
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTLogicalNotExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getArg();
+
+    REQUIRE(o1.str() == "(xandtrue)");
 }

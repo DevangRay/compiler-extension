@@ -43,3 +43,4 @@
 #include "ASTForRangeStmt.h"
 #include "ASTIncrementStmt.h"
 #include "ASTDecrementStmt.h"
+#include "ASTLogicalNotExpr.h"
