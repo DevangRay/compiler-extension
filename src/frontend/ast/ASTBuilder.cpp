@@ -597,6 +597,23 @@ Any ASTBuilder::visitLogicalNotExpr(TIPParser::LogicalNotExprContext *ctx){
   return "";
 } // LCOV_EXCL_LINE
 
+Any ASTBuilder::visitForItrStmt(TIPParser::ForItrStmtContext *ctx) {
+  visit(ctx->expr(0));
+  auto start = visitedExpr;
+  visit(ctx->expr(1));
+  auto end = visitedExpr;
+  visit(ctx->statement());
+  auto body = visitedStmt;
+  visitedStmt = std::make_shared<ASTForItrStmt>(start, end, body);
+
+  LOG_S(1) << "Built AST node " << *visitedStmt;
+
+  // Set source location
+  visitedStmt->setLocation(ctx->getStart()->getLine(),
+                           ctx->getStart()->getCharPositionInLine());
+  return "";
+}
+
 Any ASTBuilder::visitOutputStmt(TIPParser::OutputStmtContext *ctx) {
   visit(ctx->expr());
   visitedStmt = std::make_shared<ASTOutputStmt>(visitedExpr);

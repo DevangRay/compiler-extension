@@ -97,4 +97,7 @@ public:
 
   virtual bool visit(ASTLogicalNotExpr *element) { return true; }
   virtual void endVisit(ASTLogicalNotExpr *element) {}
+
+  virtual bool visit(ASTForItrStmt *element) { return true; }
+  virtual void endVisit(ASTForItrStmt *element) {}
 };

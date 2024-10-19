@@ -943,3 +943,32 @@ TEST_CASE("ASTLogicalNotExprTest: Test methods of AST subtype. Parenthesized arg
 
     REQUIRE(o1.str() == "(xandtrue)");
 }
+
+TEST_CASE("ASTForItrStmtTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo(x) {
+         var y;
+         for (y : 10 ) {
+            x = x - 1;
+         }
+         return {f : 0}.f;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTForItrStmt>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getStart();
+    REQUIRE(o1.str() == "y");
+
+    std::stringstream o2;
+    o2 << *stmt->getEnd();
+    REQUIRE(o2.str() == "10");
+
+    std::stringstream o3;
+    o3 << *stmt->getBody();
+    REQUIRE(o3.str() == "{ x = (x-1); }");
+}
