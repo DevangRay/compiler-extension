@@ -46,7 +46,7 @@ expr : expr '(' (expr (',' expr)*)? ')' 	#funAppExpr
      | SUB expr                 #negExpr
      | NOT expr                 #logicalNotExpr
      | '&' expr					#refExpr
-     | ARRLENGTH expr        #arrayLenOp
+     | ARRLENGTH expr        #arrayLenExpr
      | expr op=(MUL | DIV | MOD) expr 		#multiplicativeExpr
      | expr op=(ADD | SUB) expr 		#additiveExpr
      | expr op=(LT | LTE | GT | GTE) expr 		#relationalExpr
@@ -89,7 +89,7 @@ blockStmt : '{' (statement*) '}' ;
 
 whileStmt : KWHILE '(' expr ')' statement ;
 
-forRangeStmt : KFOR '(' expr ':' expr '..' expr 'by' expr ')' statement ; //DELIVERABLE 1
+forRangeStmt : KFOR '(' expr ':' expr '..' expr ('by' expr)? ')' statement ; //DELIVERABLE 1
 
 forItrStmt : KFOR '(' expr ':' expr ')' statement ; //DELIVERABLE 1
 

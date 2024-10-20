@@ -4,16 +4,38 @@
 
 #include <iostream>
 
-TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
+//SIP EXTENSION
+
+TEST_CASE("ASTPrinterTest: false test", "[ASTNodePrint]") {
   std::stringstream stream;
   stream << R"(
-      foo() { output 42; return 0; }
+      foo() { var x; x = false; return 0; }
     )";
 
-  std::vector<std::string> expected{"output 42;", "return 0;"};
+  std::vector<std::string> expected{"x = false;", "return 0;"};
 
   auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
 
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+//    std::cout << actual;
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+TEST_CASE("ASTPrinterTest: true test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() { var x; x = true; return 0; }
+    )";
+
+  std::vector<std::string> expected{"x = true;", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
   auto f = ast->findFunctionByName("foo");
 
   int i = 0;
@@ -24,6 +46,286 @@ TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
     REQUIRE(actual == expected.at(i++));
   }
 }
+
+TEST_CASE("ASTPrinterTest: % test", "[ASTNodePrint]") {
+  auto num_literal = std::make_shared<ASTNumberExpr>(29);
+  auto var = std::make_shared<ASTVariableExpr>("y");
+
+  // Here we just use the default constructor
+  ASTBinaryExpr yplustwentynine("%", std::move(var), std::move(num_literal));
+
+  std::stringstream stream;
+  stream << yplustwentynine;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(y%29)");
+}
+
+TEST_CASE("ASTPrinterTest: negated expression test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() { var x, y; x = 17; y = -x; return y; }
+    )";
+
+  std::vector<std::string> expected{"x = 17;", "y = - x;", "return y;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+TEST_CASE("ASTPrinterTest: and test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto vary = std::make_shared<ASTVariableExpr>("y");
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xandy("and", std::move(varx), std::move(vary));
+
+  std::stringstream stream;
+  stream << xandy;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(xandy)");
+}
+
+TEST_CASE("ASTPrinterTest: or test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto vary = std::make_shared<ASTVariableExpr>("y");
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xory("or", std::move(varx), std::move(vary));
+
+  std::stringstream stream;
+  stream << xory;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(xory)");
+}
+
+TEST_CASE("ASTPrinterTest: LT (<) test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto one = std::make_shared<ASTNumberExpr>(1);
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xltone("<", std::move(varx), std::move(one));
+
+  std::stringstream stream;
+  stream << xltone;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(x<1)");
+}
+
+TEST_CASE("ASTPrinterTest: LTE (<=) test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto negone = std::make_shared<ASTNumberExpr>(-1);
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xltenegone("<=", std::move(varx), std::move(negone));
+
+  std::stringstream stream;
+  stream << xltenegone;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(x<=-1)");
+}
+
+TEST_CASE("ASTPrinterTest: GTE (>=) test", "[ASTNodePrint]") {
+  auto varx = std::make_shared<ASTVariableExpr>("x");
+  auto negone = std::make_shared<ASTNumberExpr>(-1);
+
+  // Here we just use the default constructor
+  ASTBinaryExpr xgtenegone(">=", std::move(varx), std::move(negone));
+
+  std::stringstream stream;
+  stream << xgtenegone;
+  auto actual = stream.str();
+
+  REQUIRE(actual == "(x>=-1)");
+}
+
+TEST_CASE("ASTPrinterTest: ternary expression test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      fun() {
+        var x, y, z;
+        z = x ? x * 6 : y / 6;
+        return z;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("fun");
+
+  int i = 0;
+  int numStmts = f->getStmts().size() - 1; // skip the return
+  for (auto s: f->getStmts()) {
+      auto assignStmt = dynamic_cast<ASTAssignStmt *>(s);
+      auto ternaryExpr = dynamic_cast<ASTTernaryExpr *>(assignStmt->getRHS());
+
+      stream = std::stringstream();
+      stream << *ternaryExpr->getCondition();
+      auto actual_cond = stream.str();
+
+      stream = std::stringstream();
+      stream << *ternaryExpr->getThen();
+      auto actual_then = stream.str();
+
+      stream = std::stringstream();
+      stream << *ternaryExpr->getElse();
+      auto actual_else = stream.str();
+
+      REQUIRE(actual_cond == "x");
+      REQUIRE(actual_then == "(x*6)");
+      REQUIRE(actual_else == "(y/6)");
+
+      i++;
+      if (i == numStmts)
+         break;
+  }
+}
+
+TEST_CASE("ASTPrinterTest: literal array constructor test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      fun() {
+        var x;
+        x = [2, 4, -3, 51];
+        return x;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("fun");
+
+  int i = 0;
+  int numStmts = f->getStmts().size() - 1; // skip the return
+  for (auto s: f->getStmts()) {
+    auto assignStmt = dynamic_cast<ASTAssignStmt *>(s);
+    auto arrayExpr = dynamic_cast<ASTArrayExpr *>(assignStmt->getRHS());
+
+    stream = std::stringstream();
+    stream << *arrayExpr;
+    auto actual = stream.str();
+    REQUIRE(actual == "[ 2, 4, -3, 51 ]");
+
+    i++;
+    if (i == numStmts)
+      break;
+  }
+}
+
+TEST_CASE("ASTPrinterTest: empty literal array constructor test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      fun() {
+        var x;
+        x = [];
+        return x;
+      }
+    )";
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("fun");
+
+  int i = 0;
+  int numStmts = f->getStmts().size() - 1; // skip the return
+  for (auto s: f->getStmts()) {
+    auto assignStmt = dynamic_cast<ASTAssignStmt *>(s);
+    auto arrayExpr = dynamic_cast<ASTArrayExpr *>(assignStmt->getRHS());
+
+    stream = std::stringstream();
+    stream << *arrayExpr;
+    auto actual = stream.str();
+    REQUIRE(actual == "[  ]");
+
+    i++;
+    if (i == numStmts)
+      break;
+  }
+}
+
+TEST_CASE("ASTPrinterTest: for range statement with step", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() {
+         var y;
+         for (x : 0 .. 10 by 2) {
+            y = y + x;
+         }
+         return y;
+    }
+    )";
+
+  std::vector<std::string> expected{"for (x : 0 .. 10 by 2) { y = (y+x); }", "return y;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+TEST_CASE("ASTPrinterTest: for range statement, no step", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() {
+         var y, low;
+         low = 1241;
+         for (x : low .. low * 4) {
+            y = y + x;
+         }
+         return y;
+    }
+    )";
+
+  std::vector<std::string> expected{"low = 1241;", "for (x : low .. (low*4)) { y = (y+x); }", "return y;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+// END SIP
+
+TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo() { output 42; return 0; }
+    )";
+
+  std::vector<std::string> expected{"output 42;", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
 
 TEST_CASE("ASTPrinterTest: function printers", "[ASTNodePrint]") {
   std::stringstream stream;

@@ -56,6 +56,32 @@ target_sources(
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTVariableExpr.h
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTWhileStmt.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTWhileStmt.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTFalseExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTFalseExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTTrueExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTTrueExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTNegExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTNegExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTTernaryExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTTernaryExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTForRangeStmt.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTForRangeStmt.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTIncrementStmt.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTIncrementStmt.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTDecrementStmt.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTDecrementStmt.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTLogicalNotExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTLogicalNotExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTForItrStmt.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTForItrStmt.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayRepExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayRepExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayLenExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayLenExpr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayRefExpr.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/treetypes/ASTArrayRefExpr.h
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTVisitor.h
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTBuilder.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/ASTBuilder.h

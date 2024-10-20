@@ -23,7 +23,34 @@ endif()
 # -checks=-*,readability-*)
 
 # Code Coverage rules ###########
-add_library(coverage_config INTERFACE)
+add_library(coverage_config INTERFACE
+        src/frontend/ast/treetypes/ASTFalseExpr.h
+        src/frontend/ast/treetypes/ASTFalseExpr.cpp
+        src/frontend/ast/treetypes/ASTTrueExpr.h
+        src/frontend/ast/treetypes/ASTTrueExpr.cpp
+        src/frontend/ast/treetypes/ASTNegExpr.h
+        src/frontend/ast/treetypes/ASTNegExpr.cpp
+        src/frontend/ast/treetypes/ASTTernaryExpr.h
+        src/frontend/ast/treetypes/ASTTernaryExpr.cpp
+        src/frontend/ast/treetypes/ASTArrayExpr.h
+        src/frontend/ast/treetypes/ASTArrayExpr.cpp
+        src/frontend/ast/treetypes/ASTForRangeStmt.h
+        src/frontend/ast/treetypes/ASTForRangeStmt.cpp
+        src/frontend/ast/treetypes/ASTDecrementStmt.cpp
+        src/frontend/ast/treetypes/ASTDecrementStmt.h
+        src/frontend/ast/treetypes/ASTIncrementStmt.h
+        src/frontend/ast/treetypes/ASTIncrementStmt.cpp
+        src/frontend/ast/treetypes/ASTLogicalNotExpr.cpp
+        src/frontend/ast/treetypes/ASTLogicalNotExpr.h
+        src/frontend/ast/treetypes/ASTForItrStmt.cpp
+        src/frontend/ast/treetypes/ASTForItrStmt.h
+        src/frontend/ast/treetypes/ASTArrayRepExpr.cpp
+        src/frontend/ast/treetypes/ASTArrayRepExpr.h
+        src/frontend/ast/treetypes/ASTArrayLenExpr.cpp
+        src/frontend/ast/treetypes/ASTArrayLenExpr.h
+        src/frontend/ast/treetypes/ASTArrayRefExpr.h
+        src/frontend/ast/treetypes/ASTArrayRefExpr.cpp)
+
 
 option(CODE_COVERAGE "Enable coverage reporting." ON)
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

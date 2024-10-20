@@ -77,6 +77,79 @@ void PrettyPrinter::endVisit(ASTFunction *element) {
   indentLevel--;
 }
 
+//SIP Expansion
+void PrettyPrinter::endVisit(ASTFalseExpr *element) {
+  visitResults.push_back("false");
+}
+
+void PrettyPrinter::endVisit(ASTTrueExpr *element) {
+  visitResults.push_back("true");
+}
+
+void PrettyPrinter::endVisit(ASTNegExpr *element) {
+  std::string init = visitResults.back();
+  visitResults.pop_back();
+  visitResults.push_back("- " + init);
+}
+
+void PrettyPrinter::endVisit(ASTTernaryExpr *element) {
+  std::string elseString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string thenString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string condString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string ternaryExprString = "(" + condString + " ? " + thenString + " : " + elseString + ")";
+
+  visitResults.push_back(ternaryExprString);
+}
+
+void PrettyPrinter::endVisit(ASTArrayExpr *element) {
+  auto actualsString =
+      joinWithDelim(visitResults, ", ", element->getActuals().size(), 1);
+  visitResults.push_back("[ " + actualsString + " ]");
+}
+
+bool PrettyPrinter::visit(ASTForRangeStmt *element) {
+  indentLevel++;
+  return true;
+}
+
+void PrettyPrinter::endVisit(ASTForRangeStmt *element) {
+  std::string bodyString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string stepString;
+  if (element->getStep() != nullptr) {
+      stepString = visitResults.back();
+      visitResults.pop_back();
+  }
+
+  std::string rangeEndString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string rangeStartString = visitResults.back();
+  visitResults.pop_back();
+
+  std::string initString = visitResults.back();
+  visitResults.pop_back();
+
+  indentLevel--;
+
+  std::string forRangeString =
+      indent() + "for (" + initString + " : " + rangeStartString + " .. " + rangeEndString;
+  if (element->getStep() != nullptr) {
+      forRangeString += " by " + stepString;
+  }
+  forRangeString += + ") \n" + bodyString;
+
+  visitResults.push_back(forRangeString);
+}
+//END SIP
+
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {
   visitResults.push_back(std::to_string(element->getValue()));
 }
