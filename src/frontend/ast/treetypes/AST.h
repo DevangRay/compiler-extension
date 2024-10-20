@@ -46,3 +46,4 @@
 #include "ASTLogicalNotExpr.h"
 #include "ASTForItrStmt.h"
 #include "ASTArrayRepExpr.h"
+#include "ASTArrayLenExpr.h"

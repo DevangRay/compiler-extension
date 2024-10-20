@@ -45,7 +45,9 @@ add_library(coverage_config INTERFACE
         src/frontend/ast/treetypes/ASTForItrStmt.cpp
         src/frontend/ast/treetypes/ASTForItrStmt.h
         src/frontend/ast/treetypes/ASTArrayRepExpr.cpp
-        src/frontend/ast/treetypes/ASTArrayRepExpr.h)
+        src/frontend/ast/treetypes/ASTArrayRepExpr.h
+        src/frontend/ast/treetypes/ASTArrayLenExpr.cpp
+        src/frontend/ast/treetypes/ASTArrayLenExpr.h)
 
 
 option(CODE_COVERAGE "Enable coverage reporting." ON)
