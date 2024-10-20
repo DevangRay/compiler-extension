@@ -47,3 +47,4 @@
 #include "ASTForItrStmt.h"
 #include "ASTArrayRepExpr.h"
 #include "ASTArrayLenExpr.h"
+#include "ASTArrayRefExpr.h"

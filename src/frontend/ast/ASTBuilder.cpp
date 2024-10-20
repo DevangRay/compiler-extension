@@ -643,6 +643,22 @@ Any ASTBuilder::visitArrayLenExpr(TIPParser::ArrayLenExprContext *ctx){
   return "";
 } // LCOV_EXCL_LINE
 
+Any ASTBuilder::visitArrayRefExpr(TIPParser::ArrayRefExprContext *ctx){
+  visit(ctx->expr(0));
+  auto array = visitedExpr;
+  visit(ctx->expr(1));
+  auto index = visitedExpr;
+
+  visitedExpr = std::make_shared<ASTArrayRefExpr>(array, index);
+
+  LOG_S(1) << "Built AST node " << *visitedExpr;
+
+  // Set source location
+  visitedStmt->setLocation(ctx->getStart()->getLine(),
+                           ctx->getStart()->getCharPositionInLine());
+  return "";
+} // LCOV_EXCL_LINE
+
 Any ASTBuilder::visitOutputStmt(TIPParser::OutputStmtContext *ctx) {
   visit(ctx->expr());
   visitedStmt = std::make_shared<ASTOutputStmt>(visitedExpr);

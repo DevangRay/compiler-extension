@@ -1012,3 +1012,23 @@ TEST_CASE("ASTArrayLenExprTest: Test methods of AST subtype.",
 }
 
 
+TEST_CASE("ASTArrayRefExprTest: Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo(x) {
+          return x[2];
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTArrayRefExpr>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getArray();
+    REQUIRE(o1.str() == "x");
+
+    std::stringstream o2;
+    o2 << *stmt->getIndex();
+    REQUIRE(o2.str() == "2");
+}

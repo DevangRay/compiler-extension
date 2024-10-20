@@ -106,4 +106,7 @@ public:
 
   virtual bool visit(ASTArrayLenExpr *element) { return true; }
   virtual void endVisit(ASTArrayLenExpr *element) {}
+
+  virtual bool visit(ASTArrayRefExpr *element) { return true; }
+  virtual void endVisit(ASTArrayRefExpr *element) {}
 };
