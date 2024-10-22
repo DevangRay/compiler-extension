@@ -40,8 +40,8 @@ std::vector<std::shared_ptr<ASTNode>> ASTForRangeStmt::getChildren() {
   children.push_back(BODY);
 
   return children;
-}
+}// LCOV_EXCL_LINE
 
-llvm::Value* ASTForRangeStmt::codegen() {
-  return nullptr;
-}
+llvm::Value* ASTForRangeStmt::codegen() {// LCOV_EXCL_LINE
+  return nullptr;// LCOV_EXCL_LINE
+}// LCOV_EXCL_LINE

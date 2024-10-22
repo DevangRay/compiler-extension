@@ -537,3 +537,43 @@ main()
   expected = GeneralHelper::removeTrailingWhitespace(expected);
   REQUIRE(ppString == expected);
 }
+
+/*
+virtual void endVisit(ASTDecrementStmt *element) override;
+  virtual void endVisit(ASTIncrementStmt *element) override;
+  virtual void endVisit(ASTLogicalNotExpr *element) override;
+  virtual bool visit(ASTForItrStmt *element) override;
+  virtual void endVisit(ASTForItrStmt *element) override;
+  virtual void endVisit(ASTArrayRepExpr *element) override;
+  virtual void endVisit(ASTArrayLenExpr *element) override;
+  virtual void endVisit(ASTArrayRefExpr *element) override;
+
+ */
+
+TEST_CASE("PrettyPrinter: Test while spacing with for iterator loop", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog(){var x,y;for(y:10){x=x+y;y=y-1;y=#x;x++;y--;y=x[y];}return x;})";
+
+  std::string expected = R"(prog()
+{
+  var x, y;
+  for (y : 10)
+    {
+      x = (x + y);
+      y = (y - 1);
+      y = #x;
+      x++;
+      y--;
+      y = x[y];
+    }
+  return x;
+}
+)";
+  // should I be tossing a program thats just x[y] cuz that bugs out
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}

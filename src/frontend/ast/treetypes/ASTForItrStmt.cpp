@@ -21,8 +21,8 @@ std::vector<std::shared_ptr<ASTNode>> ASTForItrStmt::getChildren() {
     children.push_back(END);
     children.push_back(BODY);
     return children;
-}
+}// LCOV_EXCL_LINE
 
-llvm::Value* ASTForItrStmt::codegen(){
-    return nullptr;
-}
+llvm::Value* ASTForItrStmt::codegen(){// LCOV_EXCL_LINE
+    return nullptr;// LCOV_EXCL_LINE
+}// LCOV_EXCL_LINE

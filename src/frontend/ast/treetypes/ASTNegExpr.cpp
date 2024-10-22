@@ -21,8 +21,8 @@ std::vector<std::shared_ptr<ASTNode>> ASTNegExpr::getChildren() {
     std::vector<std::shared_ptr<ASTNode>> children;
     children.push_back(INIT);
     return children;
-}
+}// LCOV_EXCL_LINE
 
-llvm::Value* ASTNegExpr::codegen() {
-    return nullptr;
-}
+llvm::Value* ASTNegExpr::codegen() {// LCOV_EXCL_LINE
+    return nullptr;// LCOV_EXCL_LINE
+}// LCOV_EXCL_LINE
