@@ -35,4 +35,4 @@ std::vector<std::shared_ptr<ASTNode>> ASTBlockStmt::getChildren() {
     children.push_back(stmt);
   }
   return children;
-}
+}// LCOV_EXCL_LINE

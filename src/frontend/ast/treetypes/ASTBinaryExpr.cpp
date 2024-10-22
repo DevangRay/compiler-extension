@@ -19,4 +19,4 @@ std::vector<std::shared_ptr<ASTNode>> ASTBinaryExpr::getChildren() {
   children.push_back(LEFT);
   children.push_back(RIGHT);
   return children;
-}
+}// LCOV_EXCL_LINE

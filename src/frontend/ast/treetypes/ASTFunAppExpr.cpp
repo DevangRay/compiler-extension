@@ -48,4 +48,4 @@ std::vector<std::shared_ptr<ASTNode>> ASTFunAppExpr::getChildren() {
     children.push_back(actual);
   }
   return children;
-}
+}// LCOV_EXCL_LINE

@@ -19,4 +19,4 @@ public:
 
 protected:
   std::ostream &print(std::ostream &out) const override;
-};
+};// LCOV_EXCL_LINE

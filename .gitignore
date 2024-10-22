@@ -38,3 +38,6 @@ coverage.out/
 corretto.key*
 kitware-archive.sh*
 llvm.sh*
+git-permissions.sh
+run_gencov.sh
+start.sh

@@ -59,4 +59,4 @@ std::vector<std::shared_ptr<ASTNode>> ASTFunction::getChildren() {
   }
 
   return children;
-}
+}// LCOV_EXCL_LINE

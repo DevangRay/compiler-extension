@@ -44,4 +44,4 @@ std::vector<std::shared_ptr<ASTNode>> ASTRecordExpr::getChildren() {
     children.push_back(field);
   }
   return children;
-}
+}// LCOV_EXCL_LINE

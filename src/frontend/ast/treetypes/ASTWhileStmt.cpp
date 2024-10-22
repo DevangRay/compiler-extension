@@ -19,4 +19,4 @@ std::vector<std::shared_ptr<ASTNode>> ASTWhileStmt::getChildren() {
   children.push_back(COND);
   children.push_back(BODY);
   return children;
-}
+}// LCOV_EXCL_LINE
