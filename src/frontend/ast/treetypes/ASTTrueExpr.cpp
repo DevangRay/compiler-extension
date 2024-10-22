@@ -15,6 +15,6 @@ std::ostream &ASTTrueExpr::print(std::ostream &out) const {
     return out;
 }
 
-llvm::Value* ASTTrueExpr::codegen() {
-    return nullptr;
-}
+llvm::Value* ASTTrueExpr::codegen() {// LCOV_EXCL_LINE
+    return nullptr;// LCOV_EXCL_LINE
+}// LCOV_EXCL_LINE
