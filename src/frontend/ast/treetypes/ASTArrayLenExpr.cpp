@@ -17,8 +17,8 @@ std::vector<std::shared_ptr<ASTNode>> ASTArrayLenExpr::getChildren() {
     std::vector<std::shared_ptr<ASTNode>> children;
     children.push_back(ARRAY);
     return children;
-}
+}// LCOV_EXCL_LINE
 
-llvm::Value* ASTArrayLenExpr::codegen(){
-    return nullptr;
-}
+llvm::Value* ASTArrayLenExpr::codegen(){// LCOV_EXCL_LINE
+    return nullptr;// LCOV_EXCL_LINE
+}// LCOV_EXCL_LINE

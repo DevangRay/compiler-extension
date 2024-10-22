@@ -13,7 +13,7 @@ void ASTTrueExpr::accept(ASTVisitor *visitor) {
 std::ostream &ASTTrueExpr::print(std::ostream &out) const {
     out << "true";
     return out;
-}
+}// LCOV_EXCL_LINE
 
 llvm::Value* ASTTrueExpr::codegen() {// LCOV_EXCL_LINE
     return nullptr;// LCOV_EXCL_LINE

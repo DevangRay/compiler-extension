@@ -148,6 +148,68 @@ void PrettyPrinter::endVisit(ASTForRangeStmt *element) {
 
   visitResults.push_back(forRangeString);
 }
+
+void PrettyPrinter::endVisit(ASTDecrementStmt *element) {
+  std::string argString = visitResults.back();
+  visitResults.pop_back();
+  visitResults.push_back(indent() + argString + "--;");
+}
+
+void PrettyPrinter::endVisit(ASTIncrementStmt *element) {
+  std::string argString = visitResults.back();
+  visitResults.pop_back();
+  visitResults.push_back(indent() + argString + "++;");
+}
+
+void PrettyPrinter::endVisit(ASTLogicalNotExpr *element) {
+  std::string boolExpr = visitResults.back();
+  visitResults.pop_back();
+  visitResults.push_back("not " + boolExpr);
+}
+
+bool PrettyPrinter::visit(ASTForItrStmt *element){
+  indentLevel++;
+  return true;
+}
+
+void PrettyPrinter::endVisit(ASTForItrStmt *element) {
+  std::string bodyString = visitResults.back();
+  visitResults.pop_back();
+  std::string end = visitResults.back();
+  visitResults.pop_back();
+  std::string start = visitResults.back();
+  visitResults.pop_back();
+
+  indentLevel--;
+
+  std::string forItrString =
+      indent() + "for (" + start + " : " + end + ")\n" + bodyString;
+  visitResults.push_back(forItrString);
+}
+
+void PrettyPrinter::endVisit(ASTArrayRepExpr *element) {
+  std::string end = visitResults.back();
+  visitResults.pop_back();
+  std::string start = visitResults.back();
+  visitResults.pop_back();
+  std::string arrayRepStr = "[ " + start + " : " + end + " ] ";
+  visitResults.push_back(arrayRepStr);
+}
+
+void PrettyPrinter::endVisit(ASTArrayLenExpr *element) {
+  std::string array = visitResults.back();
+  visitResults.pop_back();
+  visitResults.push_back("#" + array);
+}
+
+void PrettyPrinter::endVisit(ASTArrayRefExpr *element) {
+  std::string index = visitResults.back();
+  visitResults.pop_back();
+  std::string array = visitResults.back();
+  visitResults.pop_back();
+  std::string arrayRepStr = array + "[" + index + "]";
+  visitResults.push_back(arrayRepStr);
+}
 //END SIP
 
 void PrettyPrinter::endVisit(ASTNumberExpr *element) {

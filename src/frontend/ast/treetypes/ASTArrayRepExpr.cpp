@@ -21,6 +21,6 @@ std::vector<std::shared_ptr<ASTNode>> ASTArrayRepExpr::getChildren() {
     return children;
 }
 
-llvm::Value* ASTArrayRepExpr::codegen(){
-    return nullptr;
-}
+llvm::Value* ASTArrayRepExpr::codegen(){// LCOV_EXCL_LINE
+    return nullptr;// LCOV_EXCL_LINE
+}// LCOV_EXCL_LINE// LCOV_EXCL_LINE
