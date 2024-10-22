@@ -8,6 +8,46 @@
 #include <Iterator.h>
 #include <iostream>
 
+//SIP Extension
+TEST_CASE("PreOrderIterator: Test ArrayExpr", "[PreOrderIterator]") {
+  std::stringstream stream;
+  stream << R"(
+      short() {
+        var x;
+        x = [1, 0, 4];
+        return x;
+      }
+    )";
+
+  std::shared_ptr<ASTProgram> ast = std::move(ASTHelper::build_ast(stream));
+
+  std::vector<std::string> expected_node_order = {
+    "e8b58ccf60a6ff962c70cf0b2c849f86824d1460552e0b55290f1ffbf39b74ff",
+    "short() {...}",
+    "short",
+    "var x;",
+    "x",
+    "x = [ 1, 0, 4 ];",
+    "x",
+    "[ 1, 0, 4 ]",
+    "1",
+    "0",
+    "4",
+    "return x;",
+    "x",
+};
+
+  SyntaxTree syntaxTree(ast);
+  int i = 0;
+  for (auto iter = syntaxTree.begin(""); iter != syntaxTree.end(""); ++iter) {
+    std::stringstream actual_node;
+    actual_node << *iter->getRoot();
+//    std::cout << actual_node.str();
+    REQUIRE(expected_node_order.at(i++) == actual_node.str());
+  }
+}
+//End Extension
+
 TEST_CASE("PreOrderIterator: Test Traversal", "[PreOrderIterator]") {
   std::stringstream stream;
   stream << R"(
