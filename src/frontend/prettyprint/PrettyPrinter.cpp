@@ -31,7 +31,7 @@ std::string joinWithDelim(std::vector<std::string> &visitResults,
   visitResults.erase(visitResults.begin() + visitResults.size() - sz,
                      visitResults.end());
   return out;
-}
+}// LCOV_EXCL_LINE
 
 void PrettyPrinter::endVisit(ASTProgram *element) {
   os << joinWithDelim(visitResults, "\n", element->getFunctions().size(), 1);
