@@ -11,7 +11,7 @@ void ASTForItrStmt::accept(ASTVisitor *visitor) {
 }
 
 std::ostream &ASTForItrStmt::print(std::ostream &out) const {
-    out << "for (" << *getStart() << ": " << *getEnd() << ") " << *getBody();
+    out << "for (" << *getStart() << " : " << *getEnd() << ") " << *getBody();
     return out;
 }
 

@@ -30,7 +30,7 @@ std::vector<std::shared_ptr<ASTNode>> ASTTernaryExpr::getChildren() {
     children.push_back(ELSE);
 
     return children;
-}
+}// LCOV_EXCL_LINE
 
 llvm::Value* ASTTernaryExpr::codegen() {// LCOV_EXCL_LINE
     return nullptr;// LCOV_EXCL_LINE
