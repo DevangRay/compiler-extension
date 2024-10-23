@@ -189,6 +189,53 @@ TEST_CASE("PreOrderIterator: Test NegExpr", "[PreOrderIterator]") {
     }
   }
 }
+
+TEST_CASE("PreOrderIterator: Test TernaryExpr", "[PreOrderIterator]") {
+  std::stringstream stream;
+  stream << R"(
+      short() {
+        var x, answer;
+        x = false;
+        answer = x ? 1 : 0;
+        return answer;
+      }
+    )";
+
+  std::shared_ptr<ASTProgram> ast = std::move(ASTHelper::build_ast(stream));
+
+  std::vector<std::string> expected_node_order = {
+    "short() {...}",
+    "short",
+    "var x, answer;",
+    "x",
+    "answer",
+    "x = false;",
+    "x",
+    "false",
+    "answer = x ? 1 : 0;",
+    "answer",
+    "x ? 1 : 0",
+    "x",
+    "1",
+    "0",
+    "return answer;",
+    "answer",
+};
+
+  SyntaxTree syntaxTree(ast);
+  int i = -1;
+  for (auto iter = syntaxTree.begin(""); iter != syntaxTree.end(""); ++iter) {
+    if (i != -1) {
+      std::stringstream actual_node;
+      actual_node << *iter->getRoot();
+//            std::cout << actual_node.str() << "\n";
+      REQUIRE(expected_node_order.at(i++) == actual_node.str());
+    }
+    else{
+      i++;
+    }
+  }
+}
 //End Extension
 
 TEST_CASE("PreOrderIterator: Test Traversal", "[PreOrderIterator]") {
