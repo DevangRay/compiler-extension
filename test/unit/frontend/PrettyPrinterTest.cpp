@@ -286,6 +286,28 @@ TEST_CASE("PrettyPrinter: Test for range statement without step", "[PrettyPrinte
   expected = GeneralHelper::removeTrailingWhitespace(expected);
   REQUIRE(ppString == expected);
 }
+
+TEST_CASE("PrettyPrinter: Test NegExpr print", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, y; x = 1; y = -x; return y; })";
+
+  std::string expected = R"(prog()
+{
+  var x, y;
+  x = 1;
+  y = - x;
+  return y;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+//  std::cout << ppString;
+  REQUIRE(ppString == expected);
+}
 //End SIP
 
 TEST_CASE("PrettyPrinter: Test default constructor", "[PrettyPrinter]") {
