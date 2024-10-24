@@ -10,7 +10,7 @@ void ASTIncrementStmt::accept(ASTVisitor *visitor) {
 }
 
 std::ostream &ASTIncrementStmt::print(std::ostream &out) const {
-    out << "Increment " << *getArg() << ";";
+    out << *getArg() << "++;";
     return out;
 }
 

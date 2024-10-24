@@ -831,7 +831,9 @@ TEST_CASE("ASTIncrementStmtTest: Test methods of AST subtype.",
       foo() {
          var x;
          x = 0;
-         x++;
+         while (x < 0){
+             x++;
+         }
         return x;
       }
     )";
@@ -967,6 +969,64 @@ TEST_CASE("ASTForItrStmtTest: Test methods of AST subtype.",
     std::stringstream o2;
     o2 << *stmt->getEnd();
     REQUIRE(o2.str() == "10");
+
+    std::stringstream o3;
+    o3 << *stmt->getBody();
+    REQUIRE(o3.str() == "{ x = (x-1); }");
+}
+
+TEST_CASE("ASTForItrStmtTest: With expression  items in loop cond. Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo(x) {
+         var y;
+         for (*y : ( 10 + x ) ) {
+            x = x - 1;
+         }
+         return x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTForItrStmt>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getStart();
+    REQUIRE(o1.str() == "(*y)");
+
+    std::stringstream o2;
+    o2 << *stmt->getEnd();
+    REQUIRE(o2.str() == "(10+x)");
+
+    std::stringstream o3;
+    o3 << *stmt->getBody();
+    REQUIRE(o3.str() == "{ x = (x-1); }");
+}
+
+TEST_CASE("ASTForItrStmtTest: With expression array in for loop cond. Test methods of AST subtype.",
+          "[ASTNodes]") {
+    std::stringstream stream;
+    stream << R"(
+      foo(x) {
+         var y;
+         for (*y : [ 10 , x , 12, 34] ) {
+            x = x - 1;
+         }
+         return x;
+      }
+    )";
+
+    auto ast = ASTHelper::build_ast(stream);
+    auto stmt = ASTHelper::find_node<ASTForItrStmt>(ast);
+
+    std::stringstream o1;
+    o1 << *stmt->getStart();
+    REQUIRE(o1.str() == "(*y)");
+
+    std::stringstream o2;
+    o2 << *stmt->getEnd();
+    REQUIRE(o2.str() == "[ 10, x, 12, 34 ]");
 
     std::stringstream o3;
     o3 << *stmt->getBody();

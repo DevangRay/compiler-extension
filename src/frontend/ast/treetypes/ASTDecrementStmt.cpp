@@ -10,7 +10,7 @@ void ASTDecrementStmt::accept(ASTVisitor *visitor) {
 }
 
 std::ostream &ASTDecrementStmt::print(std::ostream &out) const {
-    out << "Decrement " << *getArg() << ";";
+    out << *getArg() << "--;";
     return out;
 }
 
@@ -18,7 +18,7 @@ std::vector<std::shared_ptr<ASTNode>> ASTDecrementStmt::getChildren() {
     std::vector<std::shared_ptr<ASTNode>> children;
     children.push_back(ARG);
     return children;
-}
+}// LCOV_EXCL_LINE
 
 llvm::Value* ASTDecrementStmt::codegen() {// LCOV_EXCL_LINE
     return nullptr;// LCOV_EXCL_LINE

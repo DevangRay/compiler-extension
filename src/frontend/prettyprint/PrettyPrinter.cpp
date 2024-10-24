@@ -164,7 +164,7 @@ void PrettyPrinter::endVisit(ASTIncrementStmt *element) {
 void PrettyPrinter::endVisit(ASTLogicalNotExpr *element) {
   std::string boolExpr = visitResults.back();
   visitResults.pop_back();
-  visitResults.push_back("not " + boolExpr);
+  visitResults.push_back("(not " + boolExpr + ")");
 }
 
 bool PrettyPrinter::visit(ASTForItrStmt *element){
@@ -192,7 +192,7 @@ void PrettyPrinter::endVisit(ASTArrayRepExpr *element) {
   visitResults.pop_back();
   std::string start = visitResults.back();
   visitResults.pop_back();
-  std::string arrayRepStr = "[ " + start + " : " + end + " ] ";
+  std::string arrayRepStr = "[ " + start + " of " + end + " ]";
   visitResults.push_back(arrayRepStr);
 }
 
