@@ -572,9 +572,9 @@ virtual void endVisit(ASTDecrementStmt *element) override;
 
  */
 
-TEST_CASE("PrettyPrinter: Test while spacing with for iterator loop", "[PrettyPrinter]") {
+TEST_CASE("PrettyPrinter: just a quick testing of everything I added", "[PrettyPrinter]") {
   std::stringstream stream;
-  stream << R"(prog(){var x,y;for(y:10){x=x+y;y=y-1;y=#x;x++;y--;y=x[y];}return x;})";
+  stream << R"(prog(){var x,y;for(y:10){x=x+y;y=y-1;y=#x;x++;y--;x=not y;y=x[y];y=[x of 10];}return 0;})";
 
   std::string expected = R"(prog()
 {
@@ -586,12 +586,31 @@ TEST_CASE("PrettyPrinter: Test while spacing with for iterator loop", "[PrettyPr
       y = #x;
       x++;
       y--;
+      x = (not y);
       y = x[y];
+      y = [ x of 10 ];
     }
-  return x;
+  return 0;
 }
 )";
-  // should I be tossing a program thats just x[y] cuz that bugs out
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  REQUIRE(ppString == expected);
+}
+
+TEST_CASE("PrettyPrinter: Testing of nested nots", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog(){var x,y;return not (not not x and not y);})";
+
+  std::string expected = R"(prog()
+{
+  var x, y;
+  return (not ((not (not x)) and (not y)));
+}
+)";
   std::stringstream pp;
   auto ast = ASTHelper::build_ast(stream);
   PrettyPrinter::print(ast.get(), pp, ' ', 2);

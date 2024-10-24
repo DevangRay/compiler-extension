@@ -10,7 +10,7 @@ void ASTLogicalNotExpr::accept(ASTVisitor *visitor) {
 }
 
 std::ostream &ASTLogicalNotExpr::print(std::ostream &out) const {
-    out << "! " << *getArg();
+    out << "not " << *getArg();
     return out;
 }
 
