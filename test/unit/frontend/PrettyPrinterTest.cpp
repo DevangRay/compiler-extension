@@ -295,7 +295,7 @@ TEST_CASE("PrettyPrinter: Test NegExpr print", "[PrettyPrinter]") {
 {
   var x, y;
   x = 1;
-  y = - x;
+  y = -(x);
   return y;
 }
 )";
@@ -306,6 +306,28 @@ TEST_CASE("PrettyPrinter: Test NegExpr print", "[PrettyPrinter]") {
   std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
   expected = GeneralHelper::removeTrailingWhitespace(expected);
 //  std::cout << ppString;
+  REQUIRE(ppString == expected);
+}
+
+TEST_CASE("PrettyPrinter: Test NegExpr with binary expression print", "[PrettyPrinter]") {
+  std::stringstream stream;
+  stream << R"(prog() { var x, y; x = 1; y = -(x+6); return y; })";
+
+  std::string expected = R"(prog()
+{
+  var x, y;
+  x = 1;
+  y = -((x + 6));
+  return y;
+}
+)";
+
+  std::stringstream pp;
+  auto ast = ASTHelper::build_ast(stream);
+  PrettyPrinter::print(ast.get(), pp, ' ', 2);
+  std::string ppString = GeneralHelper::removeTrailingWhitespace(pp.str());
+  expected = GeneralHelper::removeTrailingWhitespace(expected);
+  //  std::cout << ppString;
   REQUIRE(ppString == expected);
 }
 //End SIP

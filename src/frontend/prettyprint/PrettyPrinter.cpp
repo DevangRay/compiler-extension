@@ -89,7 +89,7 @@ void PrettyPrinter::endVisit(ASTTrueExpr *element) {
 void PrettyPrinter::endVisit(ASTNegExpr *element) {
   std::string init = visitResults.back();
   visitResults.pop_back();
-  visitResults.push_back("- " + init);
+  visitResults.push_back("-(" + init + ")");
 }
 
 void PrettyPrinter::endVisit(ASTTernaryExpr *element) {
