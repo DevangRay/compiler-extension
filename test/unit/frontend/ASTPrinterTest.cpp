@@ -350,7 +350,7 @@ TEST_CASE("ASTPrinterTest: for itr loop test", "[ASTNodePrint]") {
   stream << R"(
       foo(x) { for (x : 10) {
         x=x;
-      }; return 0; }
+      } return 0; }
     )";
 
   std::vector<std::string> expected{"for (x : 10) { x = x; }", "return 0;"};
