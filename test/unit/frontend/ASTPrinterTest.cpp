@@ -304,6 +304,88 @@ TEST_CASE("ASTPrinterTest: for range statement, no step", "[ASTNodePrint]") {
     REQUIRE(actual == expected.at(i++));
   }
 }
+
+TEST_CASE("ASTPrinterTest: increment decrement test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo(x) { x++; x--; return 0; }
+    )";
+
+  std::vector<std::string> expected{"x++;","x--;", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+TEST_CASE("ASTPrinterTest: logical not test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo(x) { x = not x; return 0; }
+    )";
+
+  std::vector<std::string> expected{"x = not x;", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+TEST_CASE("ASTPrinterTest: for itr loop test", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo(x) { for (x : 10) {
+        x=x;
+      }; return 0; }
+    )";
+
+  std::vector<std::string> expected{"for (x : 10) { x = x; }", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
+
+TEST_CASE("ASTPrinterTest: array operation tests", "[ASTNodePrint]") {
+  std::stringstream stream;
+  stream << R"(
+      foo(x) { x = [   10 of x]; x =#x; x[10+2] = x; return 0; }
+    )";
+
+  std::vector<std::string> expected{"x = [10 of x];","x = #x;", "x[(10+2)] = x;", "return 0;"};
+
+  auto ast = ASTHelper::build_ast(stream);
+  auto f = ast->findFunctionByName("foo");
+
+  int i = 0;
+  for (auto s : f->getStmts()) {
+    stream = std::stringstream();
+    stream << *s;
+    auto actual = stream.str();
+    REQUIRE(actual == expected.at(i++));
+  }
+}
 // END SIP
 
 TEST_CASE("ASTPrinterTest: output test", "[ASTNodePrint]") {
