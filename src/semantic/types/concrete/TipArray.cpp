@@ -7,12 +7,22 @@ TipArray::TipArray(std::shared_ptr<TipType> of)
     : TipCons(std::move(std::vector<std::shared_ptr<TipType>>{of})) {}
 
 bool TipArray::operator==(const TipType &other) const {
-    auto otherTipArray = dynamic_cast<const TipArray *>(&other);
-    if (!otherTipArray) {
+    auto tipArray = dynamic_cast<const TipArray *>(&other);
+    if (!tipArray) {
         return false;
     }
 
-    return *arguments.front() == *otherTipArray->getArrayType();
+    if (arity() != tipArray->arity()) {
+        return false;
+    }
+
+    for (int i = 0; i < arity(); i++) {
+        if (*(arguments.at(i)) != *(tipArray->arguments.at(i))) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool TipArray::operator!=(const TipType &other) const {
@@ -20,7 +30,18 @@ bool TipArray::operator!=(const TipType &other) const {
 }
 
 std::ostream &TipArray::print(std::ostream &out) const {
-    out << "\u2B61" << *arguments.front();
+    out << "[";
+    bool first = true;
+    int i = 0;
+    for (auto &init : arguments) {
+        if (first) {
+            out << *init;
+            first = false;
+            continue;
+        }
+        out << "," << *init;
+    }
+    out << "]";
     return out;
 }
 
