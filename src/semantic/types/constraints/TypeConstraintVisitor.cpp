@@ -411,4 +411,21 @@ void TypeConstraintVisitor::endVisit(ASTIncrementStmt *element) {
       astToVar(element),
       std::make_shared<TipInt>());
 }
+
+/*! \brief Type constraints for increment.
+ *
+ * Type Rules for "E--":
+ * [[E]] = int
+ * [[E--]] = int
+ */
+void TypeConstraintVisitor::endVisit(ASTDecrementStmt *element) {
+  constraintHandler->handle(
+      astToVar(element->getArg()),
+      std::make_shared<TipInt>()
+  );
+
+  constraintHandler->handle(
+      astToVar(element),
+      std::make_shared<TipInt>());
+}
 //END SIP Extension

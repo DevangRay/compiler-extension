@@ -514,4 +514,32 @@ TEST_CASE("TypeConstraintVisitor: ASTIncrementStmt (E++)",
   auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
   REQUIRE(*unifier.inferred(xType) == *TypeHelper::intType());
 }
+
+TEST_CASE("TypeConstraintVisitor: ASTDecrementStmt (E--)",
+           "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+    //[[x]] = int, [[test]] = () -> int
+    test() {
+      var x;
+      x = 4;
+      x--;
+      return x;
+    }
+    )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  //    std::cout << *unifier.inferred(fType) << "\n";
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::intType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::intType());
+}
 //END SIP Extension
