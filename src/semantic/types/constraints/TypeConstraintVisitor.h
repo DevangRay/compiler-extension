@@ -56,8 +56,16 @@ public:
   void endVisit(ASTRefExpr *element) override;
   void endVisit(ASTWhileStmt *element) override;
   //SIP Extension
+  void endVisit(ASTLogicalNotExpr *element) override;
+  void endVisit(ASTTrueExpr *element) override;
+  void endVisit(ASTFalseExpr *element) override;
+  void endVisit(ASTTernaryExpr *element) override;
   void endVisit(ASTNegExpr *element) override;
   void endVisit(ASTIncrementStmt *element) override;
+  /*
+  void endVisit(ASTArrayExpr *element) override;
+  void endVisit(ASTArrayRepExpr *element) override;
+*/
   //SIP Extension
 
 protected:
