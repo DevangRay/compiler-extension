@@ -57,6 +57,7 @@ public:
   void endVisit(ASTWhileStmt *element) override;
   //SIP Extension
   void endVisit(ASTNegExpr *element) override;
+  void endVisit(ASTIncrementStmt *element) override;
   //SIP Extension
 
 protected:
