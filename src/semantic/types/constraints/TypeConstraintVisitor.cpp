@@ -378,3 +378,20 @@ void TypeConstraintVisitor::endVisit(ASTArrayRepExpr *element) {
   constraintHandler->handle(astToVar(element), std::make_shared<TipArray>(astToVar(element->getEnd())));
 }
 */
+/*! \brief Type constraints for logical not.
+ *
+ * Type Rules for "-E":
+ * [[E]] = int
+ */
+void TypeConstraintVisitor::endVisit(ASTNegExpr *element) {
+  constraintHandler->handle(
+      astToVar(element->getInitializer()),
+      std::make_shared<TipInt>()
+  );
+
+  constraintHandler->handle(
+      astToVar(element),
+      std::make_shared<TipInt>());
+}
+
+//END SIP Extension
