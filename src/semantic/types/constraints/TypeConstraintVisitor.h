@@ -55,6 +55,9 @@ public:
   void endVisit(ASTRecordExpr *element) override;
   void endVisit(ASTRefExpr *element) override;
   void endVisit(ASTWhileStmt *element) override;
+  //SIP Extension
+  void endVisit(ASTNegExpr *element) override;
+  //SIP Extension
 
 protected:
   std::shared_ptr<ConstraintHandler> constraintHandler;

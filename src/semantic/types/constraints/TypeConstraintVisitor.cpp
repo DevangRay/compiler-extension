@@ -292,3 +292,22 @@ void TypeConstraintVisitor::endVisit(ASTErrorStmt *element) {
   constraintHandler->handle(astToVar(element->getArg()),
                             std::make_shared<TipInt>());
 }
+
+//SIP Extension
+/*! \brief Type constraints for logical not.
+ *
+ * Type Rules for "-E":
+ * [[E]] = int
+ */
+void TypeConstraintVisitor::endVisit(ASTNegExpr *element) {
+  constraintHandler->handle(
+      astToVar(element->getInitializer()),
+      std::make_shared<TipInt>()
+  );
+
+  constraintHandler->handle(
+      astToVar(element),
+      std::make_shared<TipInt>());
+}
+
+//END SIP Extension

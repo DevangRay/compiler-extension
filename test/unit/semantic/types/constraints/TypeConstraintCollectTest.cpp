@@ -454,3 +454,37 @@ main() {
     auto r1Type = std::make_shared<TipVar>(symbols->getLocal("r1", fDecl));
     REQUIRE(*unifier.inferred(r1Type) == *TypeHelper::intType());
 }
+
+//SIP Extension
+TEST_CASE("TypeConstraintVisitor: ASTNegExpr (-E)",
+           "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+    //[[x]] = int, [[y]] = int, [[z]] = int, [[test]] = () -> int
+    test() {
+      var x, y;
+      x = 4;
+      y = -x;
+      return y;
+    }
+    )";
+
+    auto unifierSymbols = collectAndSolve(program);
+    auto unifier = unifierSymbols.first;
+    auto symbols = unifierSymbols.second;
+
+    std::vector<std::shared_ptr<TipType>> empty;
+
+    auto fDecl = symbols->getFunction("test");
+    auto fType = std::make_shared<TipVar>(fDecl);
+//    std::cout << *unifier.inferred(fType) << "\n";
+    REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::intType()));
+
+    auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+    REQUIRE(*unifier.inferred(xType) == *TypeHelper::intType());
+
+    auto yType = std::make_shared<TipVar>(symbols->getLocal("y", fDecl));
+    REQUIRE(*unifier.inferred(yType) == *TypeHelper::intType());
+}
+
+//END SIP Extension
