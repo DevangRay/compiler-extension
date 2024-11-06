@@ -445,6 +445,17 @@ void TypeConstraintVisitor::endVisit(ASTForItrStmt *element) {
     astToVar(element->getEnd()),
     std::make_shared<TipArray>(astToVar(element->getEnd()))
   );
+
+/* If E1 and E2 are int type */
+//  constraintHandler->handle(
+//   astToVar(element->getStart()),
+//   std::make_shared<TipInt>()
+// );
+//
+//  constraintHandler->handle(
+//    astToVar(element->getEnd()),
+//    std::make_shared<TipInt>()
+//  );
 }
 
 /*! \brief Type constraints for range for-loop.
