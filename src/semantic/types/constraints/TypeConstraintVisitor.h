@@ -63,6 +63,7 @@ public:
   void endVisit(ASTNegExpr *element) override;
   void endVisit(ASTIncrementStmt *element) override;
   void endVisit(ASTDecrementStmt *element) override;
+  void endVisit(ASTForItrStmt *element) override;
   /*
   void endVisit(ASTArrayExpr *element) override;
   void endVisit(ASTArrayRepExpr *element) override;

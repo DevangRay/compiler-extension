@@ -41,3 +41,4 @@ llvm.sh*
 git-permissions.sh
 run_gencov.sh
 start.sh
+how_to_run_html.txt

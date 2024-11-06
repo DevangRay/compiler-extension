@@ -412,7 +412,7 @@ void TypeConstraintVisitor::endVisit(ASTIncrementStmt *element) {
       std::make_shared<TipInt>());
 }
 
-/*! \brief Type constraints for increment.
+/*! \brief Type constraints for decrement.
  *
  * Type Rules for "E--":
  * [[E]] = int
@@ -427,5 +427,23 @@ void TypeConstraintVisitor::endVisit(ASTDecrementStmt *element) {
   constraintHandler->handle(
       astToVar(element),
       std::make_shared<TipInt>());
+}
+
+/*! \brief Type constraints for iterator for-loop.
+ *
+ * Type Rules for "for (E1 : E2) S":
+ * [[E1]] = [[E2[0]]]
+ * [[E2]] = array
+ */
+void TypeConstraintVisitor::endVisit(ASTForItrStmt *element) {
+  constraintHandler->handle(
+    astToVar(element->getStart()),
+    std::make_shared<TipAlpha>(element->getStart())
+  );
+
+  constraintHandler->handle(
+    astToVar(element->getEnd()),
+    std::make_shared<TipArray>(astToVar(element->getEnd()))
+  );
 }
 //END SIP Extension

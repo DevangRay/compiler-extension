@@ -1010,7 +1010,7 @@ TEST_CASE("ASTForItrStmtTest: With expression array in for loop cond. Test metho
     stream << R"(
       foo(x) {
          var y;
-         for (*y : [ 10 , x , 12, 34] ) {
+         for (y : [ 10 , x , 12, 34] ) {
             x = x - 1;
          }
          return x;
@@ -1022,7 +1022,7 @@ TEST_CASE("ASTForItrStmtTest: With expression array in for loop cond. Test metho
 
     std::stringstream o1;
     o1 << *stmt->getStart();
-    REQUIRE(o1.str() == "(*y)");
+    REQUIRE(o1.str() == "y");
 
     std::stringstream o2;
     o2 << *stmt->getEnd();

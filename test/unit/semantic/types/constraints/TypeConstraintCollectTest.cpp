@@ -542,4 +542,39 @@ TEST_CASE("TypeConstraintVisitor: ASTDecrementStmt (E--)",
   auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
   REQUIRE(*unifier.inferred(xType) == *TypeHelper::intType());
 }
+
+TEST_CASE("TypeConstraintVisitor: ForItrStmt (for (E1 : E2) S)",
+           "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+    //[[item]] = int, [[items]] = array, [[answer]] = int, [[test]] = () -> int
+    test() {
+      var item, items, answer;
+      items = [0, 1, 2, 3, 4, 5, 6];
+      for (item : items) {
+        answer = answer + item;
+      }
+      return answer;
+    }
+    )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::intType()));
+
+  auto startType = std::make_shared<TipVar>(symbols->getLocal("item", fDecl));
+  REQUIRE(*unifier.inferred(startType) == *TypeHelper::intType());
+
+  auto endType = std::make_shared<TipVar>(symbols->getLocal("items", fDecl));
+  REQUIRE(*unifier.inferred(endType) == *TypeHelper::arrayType(TypeHelper::intType()));
+
+  auto answerType = std::make_shared<TipVar>(symbols->getLocal("answer", fDecl));
+  REQUIRE(*unifier.inferred(answerType) == *TypeHelper::intType());
+}
 //END SIP Extension
