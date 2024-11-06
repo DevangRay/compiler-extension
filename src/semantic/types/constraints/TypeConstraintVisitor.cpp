@@ -446,4 +446,36 @@ void TypeConstraintVisitor::endVisit(ASTForItrStmt *element) {
     std::make_shared<TipArray>(astToVar(element->getEnd()))
   );
 }
+
+/*! \brief Type constraints for range for-loop.
+ *
+* Type Rules for "for (E1 : E2 .. E3 by E4) S":
+ * [[E1]] = int
+ * [[E2]] = int
+ * [[E3]] = int
+ * [[E4]] = int
+ */
+void TypeConstraintVisitor::endVisit(ASTForRangeStmt *element) {
+  constraintHandler->handle(
+    astToVar(element->getInitializer()),
+    std::make_shared<TipInt>()
+  );
+
+  constraintHandler->handle(
+    astToVar(element->getRangeStart()),
+    std::make_shared<TipInt>()
+  );
+
+  constraintHandler->handle(
+    astToVar(element->getRangeEnd()),
+    std::make_shared<TipInt>()
+  );
+
+  if (element->getStep()) {
+    constraintHandler->handle(
+      astToVar(element->getStep()),
+      std::make_shared<TipInt>()
+    );
+  }
+}
 //END SIP Extension
