@@ -355,10 +355,9 @@ void TypeConstraintVisitor::endVisit(ASTTernaryExpr *element){
  * [[ [ E1, E2, E3, .. EN ] ]] == [[ [ [[E1]]  ] ]]
  * [[E1]] == [[E2]] = [[E3] == [EN]]
  */
-/*
 void TypeConstraintVisitor::endVisit(ASTArrayExpr *element) {
   bool first = true;
-  std::shared_ptr<TipType> arrayType = std::make_shared<TipAlpha>(); // what do i feed here?
+  std::shared_ptr<TipType> arrayType = std::make_shared<TipAlpha>(element);
   for (auto &a : element->getActuals()) {
      if (first){
         arrayType = astToVar(a);
@@ -368,7 +367,7 @@ void TypeConstraintVisitor::endVisit(ASTArrayExpr *element) {
   }
   constraintHandler->handle(astToVar(element), std::make_shared<TipArray>(arrayType));
 }
-*/
+
 /*
   much easier than last
   [[ E1 of E2 ]] == [[ [ [[E2]]  ] ]]
@@ -435,8 +434,8 @@ void TypeConstraintVisitor::endVisit(ASTDecrementStmt *element) {
 /*! \brief Type constraints for iterator for-loop.
  *
  * Type Rules for "for (E1 : E2) S":
- * [[E1]] = [[E2[0]]]
  * [[E2]] = array
+ * [[E1]] = [[E2]]
  */
 void TypeConstraintVisitor::endVisit(ASTForItrStmt *element) {
   constraintHandler->handle(
@@ -448,17 +447,6 @@ void TypeConstraintVisitor::endVisit(ASTForItrStmt *element) {
     astToVar(element->getEnd()),
     std::make_shared<TipArray>(astToVar(element->getEnd()))
   );
-
-/* If E1 and E2 are int type */
-//  constraintHandler->handle(
-//   astToVar(element->getStart()),
-//   std::make_shared<TipInt>()
-// );
-//
-//  constraintHandler->handle(
-//    astToVar(element->getEnd()),
-//    std::make_shared<TipInt>()
-//  );
 }
 
 /*! \brief Type constraints for range for-loop.
