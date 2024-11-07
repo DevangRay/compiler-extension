@@ -23,7 +23,7 @@ std::ostream &TipBoolean::print(std::ostream &out) const {
     return out;
 } // LCOV_EXCL_LINE
 
-// TipInt is a 0-ary type constructor so it has no arguments to visit
+// TipBoolean is a 0-ary type constructor so it has no arguments to visit
 void TipBoolean::accept(TipTypeVisitor *visitor) {
     visitor->visit(this);
     visitor->endVisit(this);

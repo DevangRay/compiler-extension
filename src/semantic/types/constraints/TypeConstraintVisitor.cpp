@@ -323,6 +323,9 @@ void TypeConstraintVisitor::endVisit(ASTErrorStmt *element) {
 void TypeConstraintVisitor::endVisit(ASTLogicalNotExpr *element) {
   constraintHandler->handle(astToVar(element->getArg()),
                             std::make_shared<TipBoolean>());
+
+  constraintHandler->handle(astToVar(element),
+                            std::make_shared<TipBoolean>());
 }
 // self explanatory
 void TypeConstraintVisitor::endVisit(ASTTrueExpr *element) {

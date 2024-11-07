@@ -661,4 +661,32 @@ TEST_CASE("TypeConstraintVisitor: ForRangeStmt without \"by\" (for (E1 : E2 .. E
   auto answerType = std::make_shared<TipVar>(symbols->getLocal("answer", fDecl));
   REQUIRE(*unifier.inferred(answerType) == *TypeHelper::intType());
 }
+
+TEST_CASE("TypeConstraintVisitor: \"true\" binary variable statement", "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+    //[[x]] = boolean, [[main]] = () -> int
+    main() {
+      var x;
+      x = true;
+      return 2;
+    }
+  )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("main");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::intType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  std::cout << "x type is \n";
+  std::cout << *unifier.inferred(xType);
+  std::cout << "\n";
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::booleanType());
+}
 //END SIP Extension
