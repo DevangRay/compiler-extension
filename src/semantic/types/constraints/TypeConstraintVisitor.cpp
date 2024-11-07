@@ -351,9 +351,10 @@ void TypeConstraintVisitor::endVisit(ASTTernaryExpr *element){
 }
 
 /*
- * Array repetition type constraints
+ * Array repetition type constraints -- x = [E1, E2, E3, ...]
  * [[ [ E1, E2, E3, .. EN ] ]] == [[ [ [[E1]]  ] ]]
  * [[E1]] == [[E2]] = [[E3] == [EN]]
+ * [[x]] = [[E1]]
  */
 void TypeConstraintVisitor::endVisit(ASTArrayExpr *element) {
   bool first = true;
@@ -367,15 +368,40 @@ void TypeConstraintVisitor::endVisit(ASTArrayExpr *element) {
   }
   constraintHandler->handle(astToVar(element), std::make_shared<TipArray>(arrayType));
 }
-
 /*
   much easier than last
   [[ E1 of E2 ]] == [[ [ [[E2]]  ] ]]
   [[E1]] = int
+  [[ E2 ]] doesnt matter right?
  */
 void TypeConstraintVisitor::endVisit(ASTArrayRepExpr *element) {
   constraintHandler->handle(astToVar(element->getStart()), std::make_shared<TipInt>());
   constraintHandler->handle(astToVar(element), std::make_shared<TipArray>(astToVar(element->getEnd())));
+}
+
+/*! \brief Type constraints for array len
+ *
+* Type Rules for "#E1":
+ * [[E1]] = array
+ * [[#E1]] = int
+ */
+void TypeConstraintVisitor::endVisit(ASTArrayLenExpr *element) {
+  constraintHandler->handle(astToVar(element->getArray()), std::make_shared<TipArray>(std::make_shared<TipAlpha>(element)));
+  constraintHandler->handle(astToVar(element), std::make_shared<TipInt>());
+}
+
+/*
+  E1[E2]
+  [[ E1 ]] = some array of type alpha
+  [[ E2 ]] = int
+  [[ E1[E2] ]]  = [[ \alpha? ]] yeah i got no idea
+  [[ E1[E2] ]] = [[E1]]
+  [[ [ E1[E2] ] ]] = [[E1]]
+ */
+void TypeConstraintVisitor::endVisit(ASTArrayRefExpr *element){
+  constraintHandler->handle(astToVar(element->getIndex()), std::make_shared<TipInt>());
+  constraintHandler->handle(astToVar(element->getArray()), std::make_shared<TipArray>(std::make_shared<TipAlpha>(element)));
+  constraintHandler->handle(std::make_shared<TipArray>(astToVar(element)), (astToVar(element->getArray())));
 }
 
 /*! \brief Type constraints for logical not.
