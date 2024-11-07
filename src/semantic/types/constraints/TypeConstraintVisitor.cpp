@@ -394,14 +394,13 @@ void TypeConstraintVisitor::endVisit(ASTArrayLenExpr *element) {
   E1[E2]
   [[ E1 ]] = some array of type alpha
   [[ E2 ]] = int
-  [[ E1[E2] ]]  = [[ \alpha? ]] yeah i got no idea
-  [[ E1[E2] ]] = [[E1]]
   [[ [ E1[E2] ] ]] = [[E1]]
  */
 void TypeConstraintVisitor::endVisit(ASTArrayRefExpr *element){
   constraintHandler->handle(astToVar(element->getIndex()), std::make_shared<TipInt>());
   constraintHandler->handle(astToVar(element->getArray()), std::make_shared<TipArray>(std::make_shared<TipAlpha>(element)));
-  constraintHandler->handle(std::make_shared<TipArray>(astToVar(element)), (astToVar(element->getArray())));
+
+  constraintHandler->handle(std::make_shared<TipArray>(astToVar(element)), astToVar(element->getArray()));
 }
 
 /*! \brief Type constraints for logical not.
