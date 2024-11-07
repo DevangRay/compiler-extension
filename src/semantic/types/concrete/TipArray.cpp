@@ -21,16 +21,7 @@ bool TipArray::operator!=(const TipType &other) const {
 
 std::ostream &TipArray::print(std::ostream &out) const {
     out << "[";
-    bool first = true;
-    int i = 0;
-    for (auto &init : arguments) {
-        if (first) {
-            out << *init;
-            first = false;
-            continue;
-        }
-        out << "," << *init;
-    }
+    out << *arguments.front();
     out << "]";
     return out;
 }

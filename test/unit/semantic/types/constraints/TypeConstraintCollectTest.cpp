@@ -790,6 +790,7 @@ TEST_CASE("TypeConstraintVisitor: ASTArrayExpr ([E1, E2, ..., En]) boolean array
 
   auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
   REQUIRE(*unifier.inferred(xType) == *TypeHelper::arrayType(TypeHelper::booleanType()));
+
 }
 
 TEST_CASE("TypeConstraintVisitor: ASTArrayExpr ([E1, E2, ..., En]) null array",

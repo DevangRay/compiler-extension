@@ -117,3 +117,10 @@ TEST_CASE("Check Assignable: address of expr", "[Symbol]") {
   REQUIRE_THROWS_MATCHES(CheckAssignable::check(ast.get()), SemanticError,
                          ContainsWhat("(y*y) not an l-value"));
 }
+
+TEST_CASE("Check Assignable: array lhs", "[Symbol]") {
+  std::stringstream stream;
+  stream << R"(varlhs() { var x; x = [1,2];x[1]=0; return 0; })";
+  auto ast = ASTHelper::build_ast(stream);
+  REQUIRE_NOTHROW(CheckAssignable::check(ast.get()));
+}
