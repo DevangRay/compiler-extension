@@ -17,3 +17,5 @@
 #include "TipRef.h"
 #include "TipType.h"
 #include "TipVar.h"
+#include "TipBoolean.h"
+#include "TipArray.h"

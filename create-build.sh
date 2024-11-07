@@ -8,5 +8,5 @@ cd build
 echo "running cmake"
 cmake ..
 echo "running make"
-make
+make -j 32
 echo "ran"
