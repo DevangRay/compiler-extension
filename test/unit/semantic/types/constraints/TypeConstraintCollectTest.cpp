@@ -33,6 +33,203 @@ static std::pair<Unifier, std::shared_ptr<SymbolTable>> collectAndSolve(std::str
 
     return std::make_pair(unifier, symbols);
 }
+// begin sip boolean tests
+
+TEST_CASE("TypeConstraintVisitor: false, true, binary expressions 'and', and < > != etc",
+          "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+            // [[x]] = int, [[y]] = int, [[test]] = () -> int
+            test() {
+              var x, y;
+              x = false;
+              y = true;
+              x = x != y;
+              y = x == y;
+              x = 2 < 10;
+              x = 2 <= 10;
+              x = 2 >= 10;
+              x = 2 >= 10;
+              y = x and y;
+              x = x or y;
+              return y;
+            }
+         )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::booleanType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::booleanType());
+
+  auto yType = std::make_shared<TipVar>(symbols->getLocal("y", fDecl));
+  REQUIRE(*unifier.inferred(yType) == *TypeHelper::booleanType());
+}
+
+TEST_CASE("TypeConstraintVisitor: more boolean testing, ifs and conditionals",
+          "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+            // [[x]] = int, [[y]] = int, [[test]] = () -> int
+            test() {
+              var x, y;
+              x = false;
+              y = true;
+              if (x)
+                y = false;
+              while(y)
+                x = true;
+              return y;
+            }
+         )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::booleanType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::booleanType());
+
+  auto yType = std::make_shared<TipVar>(symbols->getLocal("y", fDecl));
+  REQUIRE(*unifier.inferred(yType) == *TypeHelper::booleanType());
+}
+
+TEST_CASE("TypeConstraintVisitor: ternary expressions",
+          "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+            // [[x]] = int, [[y]] = int, [[test]] = () -> int
+            test() {
+              var x, y;
+              x = true;
+              y = false;
+              y = x ? false and true : false or true;
+              return y;
+            }
+         )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::booleanType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::booleanType());
+
+  auto yType = std::make_shared<TipVar>(symbols->getLocal("y", fDecl));
+  REQUIRE(*unifier.inferred(yType) == *TypeHelper::booleanType());
+}
+
+TEST_CASE("TypeConstraintVisitor: logical not tests",
+          "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+            // [[x]] = int, [[y]] = int, [[test]] = () -> int
+            test() {
+              var x, y;
+              x = not true;
+              y = not false;
+              y = not ( x and false);
+              return y;
+            }
+         )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::booleanType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::booleanType());
+
+  auto yType = std::make_shared<TipVar>(symbols->getLocal("y", fDecl));
+  REQUIRE(*unifier.inferred(yType) == *TypeHelper::booleanType());
+
+}
+
+TEST_CASE("TypeConstraintVisitor: array len",
+          "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+            test() {
+              var x, y;
+              x = [ false, true, true, true];
+              y = #x;
+              return y;
+            }
+         )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::intType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::arrayType(TypeHelper::booleanType()));
+
+  auto yType = std::make_shared<TipVar>(symbols->getLocal("y", fDecl));
+  REQUIRE(*unifier.inferred(yType) == *TypeHelper::intType());
+
+}
+
+TEST_CASE("TypeConstraintVisitor: array ref",
+          "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
+            test() {
+              var x, y;
+              x = [ true, false, true];
+              y = x[1];
+              return y;
+            }
+         )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::booleanType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::arrayType(TypeHelper::booleanType()));
+
+  auto yType = std::make_shared<TipVar>(symbols->getLocal("y", fDecl));
+  REQUIRE(*unifier.inferred(yType) == *TypeHelper::booleanType());
+
+}
+
 
 TEST_CASE("TypeConstraintVisitor: input, const, arithmetic, return type",
           "[TypeConstraintVisitor]") {
