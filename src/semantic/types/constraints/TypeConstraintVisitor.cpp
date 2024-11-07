@@ -374,13 +374,17 @@ void TypeConstraintVisitor::endVisit(ASTArrayExpr *element) {
   [[E1]] = int
   [[ E2 ]] doesnt matter right?
  */
-
-
 void TypeConstraintVisitor::endVisit(ASTArrayRepExpr *element) {
   constraintHandler->handle(astToVar(element->getStart()), std::make_shared<TipInt>());
   constraintHandler->handle(astToVar(element), std::make_shared<TipArray>(astToVar(element->getEnd())));
 }
 
+/*! \brief Type constraints for array len
+ *
+* Type Rules for "#E1":
+ * [[E1]] = array
+ * [[#E1]] = int
+ */
 void TypeConstraintVisitor::endVisit(ASTArrayLenExpr *element) {
   constraintHandler->handle(astToVar(element->getArray()), std::make_shared<TipArray>(std::make_shared<TipAlpha>(element)));
   constraintHandler->handle(astToVar(element), std::make_shared<TipInt>());
@@ -393,7 +397,6 @@ void TypeConstraintVisitor::endVisit(ASTArrayLenExpr *element) {
   [[ E1[E2] ]]  = [[ \alpha? ]] yeah i got no idea
   [[ E1[E2] ]] = [[E1]]
   [[ [ E1[E2] ] ]] = [[E1]]
-
  */
 void TypeConstraintVisitor::endVisit(ASTArrayRefExpr *element){
   constraintHandler->handle(astToVar(element->getIndex()), std::make_shared<TipInt>());
@@ -455,19 +458,19 @@ void TypeConstraintVisitor::endVisit(ASTDecrementStmt *element) {
 /*! \brief Type constraints for iterator for-loop.
  *
  * Type Rules for "for (E1 : E2) S":
- * [[E2]] = array
- * [[E1]] = [[E2]]
+ * E1 == start, E2 == end
+ * [[E2]] = [[ [E1] ]]
  */
 void TypeConstraintVisitor::endVisit(ASTForItrStmt *element) {
   constraintHandler->handle(
-    astToVar(element->getStart()),
-    std::make_shared<TipAlpha>(element->getStart())
+    std::make_shared<TipArray>(astToVar(element->getStart())),
+    astToVar(element->getEnd())
   );
 
-  constraintHandler->handle(
-    astToVar(element->getEnd()),
-    std::make_shared<TipArray>(astToVar(element->getEnd()))
-  );
+//  constraintHandler -> handle(
+//      astToVar(element->getStart()),
+//      astToVar(element->getEnd())
+//  );
 }
 
 /*! \brief Type constraints for range for-loop.
