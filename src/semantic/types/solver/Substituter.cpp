@@ -36,6 +36,18 @@ void Substituter::endVisit(TipInt *element) {
   visitedTypes.push_back(std::make_shared<TipInt>());
 }
 
+void Substituter::endVisit(TipBoolean *element) {
+  // Zero element in visitedTypes (a special case of Cons)
+  visitedTypes.push_back(std::make_shared<TipBoolean>());
+}
+
+void Substituter::endVisit(TipArray *element) {
+  // One element in visitedTypes (a special case of Cons)
+  auto pointedToType = visitedTypes.back();
+  visitedTypes.pop_back();
+  visitedTypes.push_back(std::make_shared<TipArray>(pointedToType));
+}
+
 void Substituter::endVisit(TipMu *element) {
   // Two elements in visitedTypes
   auto tType = visitedTypes.back();

@@ -684,9 +684,9 @@ TEST_CASE("TypeConstraintVisitor: \"true\" binary variable statement", "[TypeCon
   REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::intType()));
 
   auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
-  std::cout << "x type is \n";
-  std::cout << *unifier.inferred(xType);
-  std::cout << "\n";
+//  std::cout << "x type is \n";
+//  std::cout << *unifier.inferred(xType);
+//  std::cout << "\n";
   REQUIRE(*unifier.inferred(xType) == *TypeHelper::booleanType());
 }
 //END SIP Extension
