@@ -66,7 +66,7 @@ public:
   void endVisit(ASTForItrStmt *element) override;
   void endVisit(ASTForRangeStmt *element) override;
   void endVisit(ASTArrayExpr *element) override;
-//  void endVisit(ASTArrayRepExpr *element) override;
+  void endVisit(ASTArrayRepExpr *element) override;
   //SIP Extension
 
 protected:
