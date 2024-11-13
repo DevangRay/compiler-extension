@@ -1054,3 +1054,26 @@ llvm::Value *ASTReturnStmt::codegen() {
   llvm::Value *argVal = getArg()->codegen();
   return irBuilder.CreateRet(argVal);
 }
+
+//SIP Extension
+llvm::Value *ASTIncrementStmt::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  llvm::Value *currentVal = getArg()->codegen();
+  if (currentVal == nullptr) {
+      throw InternalError("null increment argument");
+  }
+
+  llvm::Value *incrementedVal = irBuilder.CreateAdd(
+      currentVal,
+      oneV,
+      "incremtemp"
+  );
+
+  lValueGen = true;
+  llvm::Value *currentValPtr = getArg()->codegen();
+  lValueGen = false;
+
+  return irBuilder.CreateStore(incrementedVal, currentValPtr);
+}
+//END SIP Extension

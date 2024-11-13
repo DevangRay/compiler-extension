@@ -64,6 +64,46 @@ do
   rm $i.bc
 done
 
+# Self contained test cases
+for i in siptests/*.tip
+do
+  base="$(basename $i .tip)"
+
+  # test optimized program
+  initialize_test
+  ${TIPC} $i
+  ${TIPCLANG} -w $i.bc ${RTLIB}/tip_rtlib.bc -o $base
+
+  ./${base} &>/dev/null
+  exit_code=${?}
+  if [ ${exit_code} -ne 0 ]; then
+    echo -n "Test failure for : "
+    echo $i
+    ./${base}
+    ((numfailures++))
+  else
+    rm ${base}
+  fi
+  rm $i.bc
+
+  # test unoptimized program
+  initialize_test
+  ${TIPC} -do $i
+  ${TIPCLANG} -w $i.bc ${RTLIB}/tip_rtlib.bc -o $base
+
+  ./${base} &>/dev/null
+  exit_code=${?}
+  if [ ${exit_code} -ne 0 ]; then
+    echo -n "Test failure for : "
+    echo $i
+    ./${base}
+    ((numfailures++))
+  else
+    rm ${base}
+  fi
+  rm $i.bc
+done
+
 # IO related test cases
 for i in iotests/*.expected
 do
