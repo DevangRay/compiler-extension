@@ -438,6 +438,8 @@ llvm::Value *ASTBinaryExpr::codegen() {
     return irBuilder.CreateSub(L, R, "subtmp");
   } else if (getOp() == "*") {
     return irBuilder.CreateMul(L, R, "multmp");
+  } else if (getOp() == "%") {
+    return irBuilder.CreateSRem(L, R, "modtmp");
   } else if (getOp() == "/") {
     return irBuilder.CreateSDiv(L, R, "divtmp");
   } else if (getOp() == ">") {
