@@ -19,7 +19,3 @@ std::vector<std::shared_ptr<ASTNode>> ASTDecrementStmt::getChildren() {
     children.push_back(ARG);
     return children;
 }// LCOV_EXCL_LINE
-
-llvm::Value* ASTDecrementStmt::codegen() {// LCOV_EXCL_LINE
-    return nullptr;// LCOV_EXCL_LINE
-}// LCOV_EXCL_LINE

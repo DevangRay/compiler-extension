@@ -1076,4 +1076,25 @@ llvm::Value *ASTIncrementStmt::codegen() {
 
   return irBuilder.CreateStore(incrementedVal, currentValPtr);
 }
+
+llvm::Value *ASTDecrementStmt::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  llvm::Value *currentVal = getArg()->codegen();
+  if (currentVal == nullptr) {
+    throw InternalError("null increment argument");
+  }
+
+  llvm::Value *decrementedVal = irBuilder.CreateSub(
+      currentVal,
+      oneV,
+      "incremtemp"
+  );
+
+  lValueGen = true;
+  llvm::Value *currentValPtr = getArg()->codegen();
+  lValueGen = false;
+
+  return irBuilder.CreateStore(decrementedVal, currentValPtr);
+}
 //END SIP Extension
