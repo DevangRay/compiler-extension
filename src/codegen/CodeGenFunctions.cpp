@@ -439,6 +439,7 @@ llvm::Value *ASTBinaryExpr::codegen() {
   } else if (getOp() == "*") {
     return irBuilder.CreateMul(L, R, "multmp");
   } else if (getOp() == "%") {
+  //making signed modulus
     return irBuilder.CreateSRem(L, R, "modtmp");
   } else if (getOp() == "/") {
     return irBuilder.CreateSDiv(L, R, "divtmp");
@@ -1098,5 +1099,34 @@ llvm::Value *ASTDecrementStmt::codegen() {
   lValueGen = false;
 
   return irBuilder.CreateStore(decrementedVal, currentValPtr);
+}
+
+llvm::Value *ASTTernaryExpr::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  llvm::Value *CondV = getCondition()->codegen();
+  if (CondV == nullptr) {
+    throw InternalError(
+        "Failed to generate bitcode for the condition of ternary expression, E1"
+    );
+  }
+
+  CondV = irBuilder.CreateICmpNE(CondV, llvm::ConstantInt::get(CondV->getType(), 0), "ifcond");
+
+  llvm::Value *ThenV = getThen()->codegen();
+  if (ThenV == nullptr) {
+    throw InternalError(
+        "Failed to generate bitcode for the then expr of ternary expression, E2"
+    );
+  }
+
+  llvm::Value *ElseV = getElse()->codegen();
+  if (ElseV == nullptr) {
+    throw InternalError(
+        "Failed to generate bitcode for the else expr of ternary expression, E3"
+    );
+  }
+
+  return irBuilder.CreateSelect(CondV, ThenV, ElseV, "selectTmp");
 }
 //END SIP Extension
