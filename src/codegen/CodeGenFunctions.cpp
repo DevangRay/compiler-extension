@@ -1129,4 +1129,16 @@ llvm::Value *ASTTernaryExpr::codegen() {
 
   return irBuilder.CreateSelect(CondV, ThenV, ElseV, "selectTmp");
 }
+
+llvm::Value *ASTTrueExpr::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+  //held as 1 in x86-64
+  return irBuilder.getTrue();
+}
+
+llvm::Value *ASTFalseExpr::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+  //held as 0 in x86-64
+  return irBuilder.getFalse();
+}
 //END SIP Extension
