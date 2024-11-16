@@ -424,40 +424,60 @@ llvm::Value *ASTNumberExpr::codegen() {
 } // LCOV_EXCL_LINE
 
 llvm::Value *ASTBinaryExpr::codegen() {
-  LOG_S(1) << "Generating code for " << *this;
+    LOG_S(1) << "Generating code for " << *this;
 
-  llvm::Value *L = getLeft()->codegen();
-  llvm::Value *R = getRight()->codegen();
-  if (L == nullptr || R == nullptr) {
-    throw InternalError("null binary operand");
-  }
+    llvm::Value *L = getLeft()->codegen();
+    llvm::Value *R = getRight()->codegen();
+    if (L == nullptr || R == nullptr) {
+        throw InternalError("null binary operand");
+    }
 
-  if (getOp() == "+") {
-    return irBuilder.CreateAdd(L, R, "addtmp");
-  } else if (getOp() == "-") {
-    return irBuilder.CreateSub(L, R, "subtmp");
-  } else if (getOp() == "*") {
-    return irBuilder.CreateMul(L, R, "multmp");
-  } else if (getOp() == "%") {
+    if (getOp() == "+") {
+        return irBuilder.CreateAdd(L, R, "addtmp");
+    } else if (getOp() == "-") {
+        return irBuilder.CreateSub(L, R, "subtmp");
+    } else if (getOp() == "*") {
+        return irBuilder.CreateMul(L, R, "multmp");
+    } else if (getOp() == "%") {
   //making signed modulus
-    return irBuilder.CreateSRem(L, R, "modtmp");
-  } else if (getOp() == "/") {
-    return irBuilder.CreateSDiv(L, R, "divtmp");
-  } else if (getOp() == ">") {
-    auto *cmp = irBuilder.CreateICmpSGT(L, R, "_gttmp");
-    return irBuilder.CreateIntCast(
-        cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "gttmp");
-  } else if (getOp() == "==") {
-    auto *cmp = irBuilder.CreateICmpEQ(L, R, "_eqtmp");
-    return irBuilder.CreateIntCast(
-        cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "eqtmp");
-  } else if (getOp() == "!=") {
-    auto *cmp = irBuilder.CreateICmpNE(L, R, "_neqtmp");
-    return irBuilder.CreateIntCast(
-        cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "neqtmp");
-  } else {
-    throw InternalError("Invalid binary operator: " + OP);
-  }
+        return irBuilder.CreateSRem(L, R, "modtmp");
+    } else if (getOp() == "/") {
+        return irBuilder.CreateSDiv(L, R, "divtmp");
+    } else if (getOp() == ">") {
+        auto *cmp = irBuilder.CreateICmpSGT(L, R, "_gttmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "gttmp");
+    } else if (getOp() == "<") {
+        auto *cmp = irBuilder.CreateICmpSLT(L, R, "_lttmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "lttmp");
+    } else if (getOp() == "<=") {
+        auto *cmp = irBuilder.CreateICmpSLE(L, R, "_letmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "letmp");
+    } else if (getOp() == ">=") {
+        auto *cmp = irBuilder.CreateICmpSGE(L, R, "_getmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "getmp");
+    } else if (getOp() == "==") {
+        auto *cmp = irBuilder.CreateICmpEQ(L, R, "_eqtmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "eqtmp");
+    } else if (getOp() == "!=") {
+        auto *cmp = irBuilder.CreateICmpNE(L, R, "_neqtmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "neqtmp");
+    } else if (getOp() == "and") { //figure out if it short circuits later
+        auto *cmp = irBuilder.CreateAnd(L, R, "andtmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "andresult");
+    } else if (getOp() == "or") { // figure out if it short circuits later
+        auto *cmp = irBuilder.CreateOr(L, R, "ortmp");
+        return irBuilder.CreateIntCast(
+            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "orresult");
+    } else {
+        throw InternalError("Invalid binary operator: " + getOp());
+    }
 }
 
 /*
@@ -1142,3 +1162,123 @@ llvm::Value *ASTFalseExpr::codegen() {
   return irBuilder.getFalse();
 }
 //END SIP Extension
+
+
+
+// said SIP
+
+llvm::Value *ASTLogicalNotExpr::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  // Generate code for the operand of the NOT expression.
+  llvm::Value *OperandV = getArg()->codegen();
+  if (OperandV == nullptr) {
+    throw InternalError(
+        "failed to generate bitcode for the operand of the NOT expression");
+  }
+
+  // Convert operand to a boolean value by comparing non-equal to 0.
+  OperandV = irBuilder.CreateICmpNE(
+      OperandV, llvm::ConstantInt::get(OperandV->getType(), 0), "notcond");
+
+  // Create the NOT operation. We can use a bitwise NOT followed by a comparison
+  // or simply use the logical NOT directly using `CreateNot`.
+  llvm::Value *NotV = irBuilder.CreateNot(OperandV, "notresult");
+
+  return NotV;
+}
+
+llvm::Value *ASTNegExpr::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  // Generate code for the operand of the negation expression.
+  llvm::Value *OperandV = getInitializer()->codegen();
+  if (OperandV == nullptr) {
+    throw InternalError(
+        "failed to generate bitcode for the operand of the negation expression");
+  }
+
+  // Perform the negation. We can simply use CreateNeg for negating the operand.
+  llvm::Value *NegV = irBuilder.CreateNeg(OperandV, "negresult");
+
+  return NegV;
+}
+
+
+llvm::Value *ASTForRangeStmt::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+
+  labelNum++; // create shared labels for these BBs
+
+  llvm::BasicBlock *HeaderBB = llvm::BasicBlock::Create(
+      llvmContext, "for.header" + std::to_string(labelNum), TheFunction);
+  llvm::BasicBlock *BodyBB =
+      llvm::BasicBlock::Create(llvmContext, "for.body" + std::to_string(labelNum));
+  llvm::BasicBlock *ExitBB =
+      llvm::BasicBlock::Create(llvmContext, "for.exit" + std::to_string(labelNum));
+
+  // Evaluate the start (E2), end (E3), and step (E4 or default to 1).
+  llvm::Value *StartV = getRangeStart()->codegen();
+  llvm::Value *EndV = getRangeEnd()->codegen();
+  llvm::Value *StepV = getStep() ? getStep()->codegen()
+                                     : llvm::ConstantInt::get(StartV->getType(), 1);
+  if (!StartV || !EndV || !StepV) {
+    throw InternalError("failed to generate bitcode for for loop components"); // LCOV_EXCL_LINE
+  }
+  lValueGen = true;
+
+  llvm::Value *Iterator = getInitializer()->codegen();
+  if (!Iterator) {
+    throw InternalError("failed to generate bitcode for for range E1 component"); // LCOV_EXCL_LINE
+  }
+  lValueGen = false;
+
+  // Initialize the iterator to the start value.
+  irBuilder.CreateStore(StartV, Iterator);
+
+  // Branch to the loop header.
+  irBuilder.CreateBr(HeaderBB);
+
+  // Emit the loop header.
+  {
+    irBuilder.SetInsertPoint(HeaderBB);
+
+    // Load the current value of the iterator.
+    llvm::Value *CurVal = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), Iterator, "iter");
+
+    // Check the loop condition (CurVal < EndV).
+    llvm::Value *CondV = irBuilder.CreateICmpSLT(CurVal, EndV, "forcond");
+
+    // Branch to the body if the condition is true; otherwise, exit the loop.
+    irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
+  }
+
+  // Emit the loop body.
+  {
+    TheFunction->insert(TheFunction->end(), BodyBB);
+    irBuilder.SetInsertPoint(BodyBB);
+
+    // Generate code for the loop body (S).
+    llvm::Value *BodyV = getBody()->codegen();
+    if (BodyV == nullptr) {
+      throw InternalError("failed to generate bitcode for loop body"); // LCOV_EXCL_LINE
+    }
+
+    // Increment the iterator by the step value.
+    llvm::Value *CurVal = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), Iterator, "iter");
+    llvm::Value *NextVal = irBuilder.CreateAdd(CurVal, StepV, "nextiter");
+    irBuilder.CreateStore(NextVal, Iterator);
+
+    // Branch back to the header.
+    irBuilder.CreateBr(HeaderBB);
+  }
+  // do we want x to change outside the for loop.
+  // Emit the loop exit block.
+  TheFunction->insert(TheFunction->end(), ExitBB);
+  irBuilder.SetInsertPoint(ExitBB);
+
+  // No explicit return value; returning a "nop" or null equivalent.
+  return irBuilder.CreateCall(nop);
+}

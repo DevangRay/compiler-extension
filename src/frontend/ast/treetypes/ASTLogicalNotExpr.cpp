@@ -19,7 +19,3 @@ std::vector<std::shared_ptr<ASTNode>> ASTLogicalNotExpr::getChildren() {
     children.push_back(ARG);
     return children;
 }// LCOV_EXCL_LINE
-
-llvm::Value* ASTLogicalNotExpr::codegen() {// LCOV_EXCL_LINE
-    return nullptr;// LCOV_EXCL_LINE
-}// LCOV_EXCL_LINE
