@@ -1196,9 +1196,14 @@ llvm::Value *ASTArrayRepExpr::codegen() {
   //  llvm::Module *module = getCurrentModule();             // Retrieve the current LLVM Module.
 
   // Step 1: Generate the LLVM IR for each element in the array.
+  llvm::Value *ptrSize = getStart()->codegen();
+  llvm::ConstantInt *constPtrSize = llvm::dyn_cast<llvm::ConstantInt>(ptrSize);
+  int intSize = constPtrSize->getSExtValue();
+
   std::vector<llvm::Value *> elementValues;
-  for (size_t j = 0; j < 5; ++j) {
-    llvm::Value *element = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 2);
+  for (size_t j = 0; j < intSize; ++j) {
+    llvm::Value *element = getEnd()->codegen();
+//    llvm::Value *element = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 2);
     if (!element) {
       throw InternalError("Error generating code for array element");
     }
