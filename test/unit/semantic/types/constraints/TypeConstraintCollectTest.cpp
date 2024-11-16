@@ -858,6 +858,32 @@ TEST_CASE("TypeConstraintVisitor: ASTArrayRepExpr ([E1 of E2]) bool array",
            "[TypeConstraintVisitor]") {
   std::stringstream program;
   program << R"(
+    //[[x]] = bool array, [[test]] = () -> int
+    test() {
+      var x;
+      x = [1023 of false];
+      return 0;
+    }
+    )";
+
+  auto unifierSymbols = collectAndSolve(program);
+  auto unifier = unifierSymbols.first;
+  auto symbols = unifierSymbols.second;
+
+  std::vector<std::shared_ptr<TipType>> empty;
+
+  auto fDecl = symbols->getFunction("test");
+  auto fType = std::make_shared<TipVar>(fDecl);
+  REQUIRE(*unifier.inferred(fType) == *TypeHelper::funType(empty, TypeHelper::intType()));
+
+  auto xType = std::make_shared<TipVar>(symbols->getLocal("x", fDecl));
+  REQUIRE(*unifier.inferred(xType) == *TypeHelper::arrayType(TypeHelper::booleanType()));
+}
+
+TEST_CASE("TypeConstraintVisitor: ASTArrayRepExpr ([E1 of E2]) bool array",
+           "[TypeConstraintVisitor]") {
+  std::stringstream program;
+  program << R"(
     //[[x]] = bool array, [[num]] = int, [[value]] = bool, [[test]] = () -> int
     test() {
       var x, num, value;

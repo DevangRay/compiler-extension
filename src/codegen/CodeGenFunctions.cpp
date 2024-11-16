@@ -98,6 +98,7 @@ llvm::Constant *oneV =
  */
 
 llvm::Function *getFunction(const std::string& functionName) {
+  std::cout << "start of function\n\n\n";
   auto formalNames = functionFormalNames[functionName];
 
   /*
@@ -804,6 +805,7 @@ llvm::Value *ASTDeclStmt::codegen() {
 
 llvm::Value *ASTAssignStmt::codegen() {
   LOG_S(1) << "Generating code for " << *this;
+  std::cout << "seg fault in assign stmt?\n\n\n\n";
 
   // trigger code generation for l-value expressions
   lValueGen = true;
@@ -1143,6 +1145,7 @@ llvm::Value *ASTFalseExpr::codegen() {
 }
 
 llvm::Value *ASTArrayExpr::codegen() {
+//  std::cout << "HERE in ASTArrayExpr\n\n\n";
   LOG_S(1) << "Generating code for " << *this;
 
 //  llvm::LLVMContext &context = llvm::getGlobalContext(); // Adjust if you're using a different context.
@@ -1165,6 +1168,49 @@ llvm::Value *ASTArrayExpr::codegen() {
 //  }
 //  llvm::Type *elementType = elementValues[0]->getType(); // Assuming all elements are the same type.
 //  llvm::ArrayType *arrayType = llvm::ArrayType::get(elementType, elementValues.size());
+
+  // Step 3: Allocate memory for the array.
+  llvm::Constant *arraySize = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size());
+  llvm::AllocaInst *arrayAlloc = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), arraySize, "arraytmp");
+
+  // Step 4: Initialize the array elements.
+  for (size_t i = 0; i < elementValues.size(); ++i) {
+    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i);
+    std::vector<llvm::Value *> indices = {
+      index // Element index
+  };
+    llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
+    irBuilder.CreateStore(elementValues[i], elementPtr);
+  }
+
+  // Step 5: Return a pointer to the array.
+  return arrayAlloc;
+}
+
+llvm::Value *ASTArrayRepExpr::codegen() {
+  std::cout << "HERE\n\n\n";
+  LOG_S(1) << "Generating code for " << *this;
+
+  //  llvm::LLVMContext &context = llvm::getGlobalContext(); // Adjust if you're using a different context.
+  //  llvm::IRBuilder<> &builder = getCurrentBuilder();      // Retrieve the current IRBuilder.
+  //  llvm::Module *module = getCurrentModule();             // Retrieve the current LLVM Module.
+
+  // Step 1: Generate the LLVM IR for each element in the array.
+  std::vector<llvm::Value *> elementValues;
+  for (size_t j = 0; j < 5; ++j) {
+    llvm::Value *element = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 2);
+    if (!element) {
+      throw InternalError("Error generating code for array element");
+    }
+    elementValues.push_back(element);
+  }
+
+  // Step 2: Determine the array type.
+  //  if (elementValues.empty()) {
+  //    throw InternalError("Error: Cannot generate code for empty array.");
+  //  }
+  //  llvm::Type *elementType = elementValues[0]->getType(); // Assuming all elements are the same type.
+  //  llvm::ArrayType *arrayType = llvm::ArrayType::get(elementType, elementValues.size());
 
   // Step 3: Allocate memory for the array.
   llvm::Constant *arraySize = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size());
