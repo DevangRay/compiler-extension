@@ -1161,17 +1161,24 @@ llvm::Value *ASTArrayExpr::codegen() {
   // Step 3: Allocate memory for the array.
   std::vector<llvm::Value *> twoArg;
   twoArg.push_back(
-    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()));
+    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()+1));
   twoArg.push_back(
       llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 8));
   auto *arrayAlloc = irBuilder.CreateCall(callocFun, twoArg, "arrayPtr");
 
 
 //  llvm::AllocaInst *arrayAlloc = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), arraySize, "arraytmp");
+  llvm::Value *constantLengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> lengthIndex = {
+      constantLengthIndex
+  };
+  llvm::Value *lengthElementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, constantLengthIndex, "elementptr");
+  llvm::Value *lengthValue = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size());
+  irBuilder.CreateStore(lengthValue, lengthElementPtr);
 
   // Step 4: Initialize the array elements.
   for (size_t i = 0; i < elementValues.size(); ++i) {
-    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i);
+    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i+1);
     std::vector<llvm::Value *> indices = {
       index // Element index
   };
@@ -1253,8 +1260,12 @@ llvm::Value *ASTArrayRefExpr::codegen() {
     throw InternalError("Error finding index for referencing");
   }
 
+  llvm::ConstantInt *constIndex = llvm::dyn_cast<llvm::ConstantInt>(index);
+  int intIndex = constIndex->getSExtValue() + 1;
+  llvm::Value *newIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), intIndex);
+
   std::vector<llvm::Value *> indices = {
-      index
+      newIndex
   };
 
   auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
@@ -1265,4 +1276,25 @@ llvm::Value *ASTArrayRefExpr::codegen() {
   auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
   return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
 }
+
+llvm::Value* ASTArrayLenExpr::codegen() {
+  LOG_S(1) << "Generating code for ASTArrayLenExpr";
+
+  llvm::Value *array = getArray()->codegen();
+  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
+  if (!array) {
+    throw InternalError("Error finding array for referencing");
+  }
+
+  llvm::Value *lengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> indices = {
+    lengthIndex
+  };
+
+  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
+  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
+
+  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
+}
+
 //END SIP Extension
