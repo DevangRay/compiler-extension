@@ -1,0 +1,12 @@
+main() {
+    var x, y;
+    x = false;
+    x = not x;
+    if (x){
+        y = 1;
+    }
+    else {
+        y = 2;
+    }
+    return y;
+}

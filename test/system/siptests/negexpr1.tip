@@ -1,0 +1,7 @@
+main(){
+var x;
+x = 1;
+output 10;
+return -(x + 2);
+
+}
