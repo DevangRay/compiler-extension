@@ -854,7 +854,7 @@ TEST_CASE("TypeConstraintVisitor: ASTArrayRepExpr ([E1 of E2]) int array",
   REQUIRE(*unifier.inferred(xType) == *TypeHelper::arrayType(TypeHelper::intType()));
 }
 
-TEST_CASE("TypeConstraintVisitor: ASTArrayRepExpr ([E1 of E2]) bool array",
+TEST_CASE("TypeConstraintVisitor: ASTArrayRepExpr ([E1 of E2]) immediate bool array",
            "[TypeConstraintVisitor]") {
   std::stringstream program;
   program << R"(

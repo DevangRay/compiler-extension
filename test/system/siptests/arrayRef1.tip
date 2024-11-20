@@ -1,0 +1,9 @@
+foo() {
+    return [1, 2, 34, 69, 450];
+}
+
+main() {
+    var x;
+    x = foo();
+    return x[0];
+}
