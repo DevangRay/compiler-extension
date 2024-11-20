@@ -14,7 +14,3 @@ std::ostream &ASTFalseExpr::print(std::ostream &out) const {
     out << "false";
     return out;
 }
-
-llvm::Value* ASTFalseExpr::codegen() {// LCOV_EXCL_LINE
-    return nullptr;// LCOV_EXCL_LINE
-}// LCOV_EXCL_LINE

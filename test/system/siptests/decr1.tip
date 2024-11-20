@@ -1,0 +1,6 @@
+main() {
+    var x;
+    x = 100;
+    x--;
+    return x;
+}
