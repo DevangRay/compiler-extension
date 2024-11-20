@@ -1,0 +1,18 @@
+main() {
+    var x, y;
+    x = false;
+    y = 1;
+    x = not x;
+    if (x and foo()){ // check for short circuit
+        x = true;
+    }
+    if (x or foo()){
+        y = 1;
+    }
+    return y;
+}
+
+foo(){
+    output 1;
+    return false;
+}
