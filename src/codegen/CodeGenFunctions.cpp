@@ -98,6 +98,7 @@ llvm::Constant *oneV =
  */
 
 llvm::Function *getFunction(const std::string& functionName) {
+//  std::cout << "start of function\n\n\n";
   auto formalNames = functionFormalNames[functionName];
 
   /*
@@ -166,6 +167,7 @@ std::shared_ptr<llvm::Module>
 ASTProgram::codegen(SemanticAnalysis *semanticAnalysis,
                     const std::string &programName) {
   LOG_S(1) << "Generating code for program " << programName;
+//  std::cout << "even reached astprogram??\n\n\n";
 
   auto TheModule = std::make_shared<llvm::Module>(programName, llvmContext);
 
@@ -872,6 +874,7 @@ llvm::Value *ASTDeclStmt::codegen() {
 
 llvm::Value *ASTAssignStmt::codegen() {
   LOG_S(1) << "Generating code for " << *this;
+//  std::cout << "seg fault in assign stmt?\n\n\n\n";
 
   // trigger code generation for l-value expressions
   lValueGen = true;
@@ -1208,6 +1211,127 @@ llvm::Value *ASTFalseExpr::codegen() {
   LOG_S(1) << "Generating code for " << *this;
   //held as 0 in x86-64
   return llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+}
+
+llvm::Value *ASTArrayExpr::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  // Step 1: Generate the LLVM IR for each element in the array.
+  std::vector<llvm::Value *> elementValues;
+  for (auto &expr : getActuals()) {
+    llvm::Value *element = expr->codegen();
+    if (!element) {
+      throw InternalError("Error generating code for array element");
+    }
+    elementValues.push_back(element);
+  }
+
+  // Step 3: Allocate memory for the array.
+  std::vector<llvm::Value *> twoArg;
+  twoArg.push_back(
+    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()));
+  twoArg.push_back(
+      llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 8));
+  auto *arrayAlloc = irBuilder.CreateCall(callocFun, twoArg, "arrayPtr");
+
+
+//  llvm::AllocaInst *arrayAlloc = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), arraySize, "arraytmp");
+
+  // Step 4: Initialize the array elements.
+  for (size_t i = 0; i < elementValues.size(); ++i) {
+    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i);
+    std::vector<llvm::Value *> indices = {
+      index // Element index
+  };
+    llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
+    irBuilder.CreateStore(elementValues[i], elementPtr);
+  }
+
+  // Step 5: Return a pointer to the array.
+  return irBuilder.CreatePtrToInt(
+      arrayAlloc, llvm::Type::getInt64Ty(llvmContext), "arrayPtr");
+}
+
+llvm::Value *ASTArrayRepExpr::codegen() {
+//  std::cout << "HERE\n\n\n";
+  LOG_S(1) << "Generating code for " << *this;
+
+  //  llvm::LLVMContext &context = llvm::getGlobalContext(); // Adjust if you're using a different context.
+  //  llvm::IRBuilder<> &builder = getCurrentBuilder();      // Retrieve the current IRBuilder.
+  //  llvm::Module *module = getCurrentModule();             // Retrieve the current LLVM Module.
+
+  // Step 1: Generate the LLVM IR for each element in the array.
+  llvm::Value *ptrSize = getStart()->codegen();
+  llvm::ConstantInt *constPtrSize = llvm::dyn_cast<llvm::ConstantInt>(ptrSize);
+  int intSize = constPtrSize->getSExtValue();
+
+  std::vector<llvm::Value *> elementValues;
+  for (size_t j = 0; j < intSize; ++j) {
+    llvm::Value *element = getEnd()->codegen();
+//    llvm::Value *element = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 2);
+    if (!element) {
+      throw InternalError("Error generating code for array element");
+    }
+    elementValues.push_back(element);
+  }
+
+  // Step 2: Determine the array type.
+  //  if (elementValues.empty()) {
+  //    throw InternalError("Error: Cannot generate code for empty array.");
+  //  }
+  //  llvm::Type *elementType = elementValues[0]->getType(); // Assuming all elements are the same type.
+  //  llvm::ArrayType *arrayType = llvm::ArrayType::get(elementType, elementValues.size());
+
+  // Step 3: Allocate memory for the array.
+  std::vector<llvm::Value *> twoArg;
+  twoArg.push_back(
+    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()));
+  twoArg.push_back(
+      llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 8));
+  auto *arrayAlloc = irBuilder.CreateCall(callocFun, twoArg, "arrayPtr");
+
+  // Step 4: Initialize the array elements.
+  for (size_t i = 0; i < elementValues.size(); ++i) {
+    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i);
+    std::vector<llvm::Value *> indices = {
+      index // Element index
+  };
+    llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
+    irBuilder.CreateStore(elementValues[i], elementPtr);
+  }
+
+  // Step 5: Return a pointer to the array.
+  return arrayAlloc;
+}
+
+llvm::Value *ASTArrayRefExpr::codegen() {
+  LOG_S(1) << "Generating code for " << *this;
+
+  bool isLValue = lValueGen;
+  lValueGen = false;
+
+  llvm::Value *array = getArray()->codegen();
+  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
+  if (!array) {
+      throw InternalError("Error finding array for referencing");
+  }
+
+  llvm::Value *index = getIndex()->codegen();
+  if (!index) {
+    throw InternalError("Error finding index for referencing");
+  }
+
+  std::vector<llvm::Value *> indices = {
+      index
+  };
+
+  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
+  if (isLValue) {
+    return gep;
+  }
+
+  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
+  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
 }
 //END SIP Extension
 
