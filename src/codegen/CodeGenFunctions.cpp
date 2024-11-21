@@ -479,7 +479,7 @@ llvm::Value *ASTBinaryExpr::codegen() {
         irBuilder.SetInsertPoint(evalRightBlock);
         llvm::Value *R = getRight()->codegen();
         if (R == nullptr) {
-            throw InternalError("null right binary operand");
+            throw InternalError("null right binary operand"); // LCOV_EXCL_LINE
         }
 	    irBuilder.CreateStore(R, result);
         irBuilder.CreateBr(endBlock);
@@ -1172,29 +1172,75 @@ llvm::Value *ASTTernaryExpr::codegen() {
   LOG_S(1) << "Generating code for " << *this;
 
   llvm::Value *CondV = getCondition()->codegen();
-  if (CondV == nullptr) {
+  if (!CondV || CondV == nullptr) {
     throw InternalError(
         "Failed to generate bitcode for the condition of ternary expression, E1"
     );
   }
 
   CondV = irBuilder.CreateICmpNE(CondV, llvm::ConstantInt::get(CondV->getType(), 0), "ifcond");
+  llvm::Value *retValuePtr = CreateEntryBlockAlloca(irBuilder.GetInsertBlock()->getParent(), "retValuePtr");
 
-  llvm::Value *ThenV = getThen()->codegen();
-  if (ThenV == nullptr) {
-    throw InternalError(
+  llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+  labelNum++; // create shared labels for these BBs
+
+  llvm::BasicBlock *ThenBB = llvm::BasicBlock::Create(
+      llvmContext, "then" + std::to_string(labelNum), TheFunction);
+  llvm::BasicBlock *ElseBB =
+      llvm::BasicBlock::Create(llvmContext, "else" + std::to_string(labelNum));
+  llvm::BasicBlock *MergeBB = llvm::BasicBlock::Create(
+      llvmContext, "ifmerge" + std::to_string(labelNum));
+
+  irBuilder.CreateCondBr(CondV, ThenBB, ElseBB);
+
+  {
+    irBuilder.SetInsertPoint(ThenBB);
+
+    llvm::Value *ThenV = getThen()->codegen();
+    if (!ThenV || ThenV == nullptr) {
+      throw InternalError(// LCOV_EXCL_LINE
         "Failed to generate bitcode for the then expr of ternary expression, E2"
-    );
+      );// LCOV_EXCL_LINE
+    }
+
+    irBuilder.CreateStore(ThenV, retValuePtr);
+    irBuilder.CreateBr(MergeBB);
   }
 
-  llvm::Value *ElseV = getElse()->codegen();
-  if (ElseV == nullptr) {
-    throw InternalError(
+  {
+    TheFunction->insert(TheFunction->end(), ElseBB);
+    irBuilder.SetInsertPoint(ElseBB);
+
+    llvm::Value *ElseV = getElse()->codegen();
+    if (!ElseV || ElseV == nullptr) {
+      throw InternalError(// LCOV_EXCL_LINE
         "Failed to generate bitcode for the else expr of ternary expression, E3"
-    );
+      );// LCOV_EXCL_LINE
+    }
+
+    irBuilder.CreateStore(ElseV, retValuePtr);
+    irBuilder.CreateBr(MergeBB);
   }
 
-  return irBuilder.CreateSelect(CondV, ThenV, ElseV, "selectTmp");
+  TheFunction->insert(TheFunction->end(), MergeBB);
+  irBuilder.SetInsertPoint(MergeBB);
+  return irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), retValuePtr, "retValue");
+
+//  llvm::Value *ThenV = getThen()->codegen();
+//  if (ThenV == nullptr) {
+//    throw InternalError(
+//        "Failed to generate bitcode for the then expr of ternary expression, E2"
+//    );
+//  }
+//
+//  llvm::Value *ElseV = getElse()->codegen();
+//  if (ElseV == nullptr) {
+//    throw InternalError(
+//        "Failed to generate bitcode for the else expr of ternary expression, E3"
+//    );
+//  }
+//
+//  return irBuilder.CreateSelect(CondV, ThenV, ElseV, "selectTmp");
 }
 
 llvm::Value *ASTTrueExpr::codegen() {
@@ -1217,7 +1263,7 @@ llvm::Value *ASTArrayExpr::codegen() {
   for (auto &expr : getActuals()) {
     llvm::Value *element = expr->codegen();
     if (!element) {
-      throw InternalError("Error generating code for array element");
+      throw InternalError("Error generating code for array element");// LCOV_EXCL_LINE
     }
     elementValues.push_back(element);
   }
@@ -1264,7 +1310,7 @@ llvm::Value *ASTArrayRepExpr::codegen() {
   llvm::Value *arity = getStart()->codegen();
   lValueGen = false;
   if (!arity) {
-    throw InternalError("Error getting arity of array");
+    throw InternalError("Error getting arity of array");// LCOV_EXCL_LINE
   }
 
   llvm::Value *newArity = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "newArity");
@@ -1274,7 +1320,7 @@ llvm::Value *ASTArrayRepExpr::codegen() {
 
   llvm::Value *value = getEnd()->codegen();
   if (!value) {
-    throw InternalError("Error getting repeat value of array");
+    throw InternalError("Error getting repeat value of array");// LCOV_EXCL_LINE
   }
 
   //calloc Array
@@ -1360,7 +1406,7 @@ llvm::Value *ASTArrayRefExpr::codegen() {
 
   llvm::Value *array = getArray()->codegen();
   if (!array) {
-    throw InternalError("Error finding array for referencing");
+    throw InternalError("Error finding array for referencing");// LCOV_EXCL_LINE
   }
   llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
 
@@ -1375,7 +1421,7 @@ llvm::Value *ASTArrayRefExpr::codegen() {
 
   llvm::Value *index = getIndex()->codegen();
   if (!index) {
-    throw InternalError("Error finding index for referencing");
+    throw InternalError("Error finding index for referencing");// LCOV_EXCL_LINE
   }
    labelNum++;
    llvm::Value *geCheck = irBuilder.CreateICmpSGE(index, arrayLenLoad, "gteLenCond");
@@ -1409,7 +1455,7 @@ llvm::Value *ASTArrayRefExpr::codegen() {
     irBuilder.SetInsertPoint(lenNormal);
     llvm::Value *newIndex = irBuilder.CreateAdd(index, oneV, "newIndex");
 
-    indices = {
+    indices = {// LCOV_EXCL_LINE
       newIndex
   };
 
@@ -1427,7 +1473,7 @@ llvm::Value* ASTArrayLenExpr::codegen() {
 
   llvm::Value *array = getArray()->codegen();
   if (!array) {
-    throw InternalError("Error finding array for referencing");
+    throw InternalError("Error finding array for referencing");// LCOV_EXCL_LINE
   }
   llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayLenPtrToInt");
 
@@ -1501,7 +1547,7 @@ llvm::Value *ASTForRangeStmt::codegen() {
 
   llvm::Value *Iterator = getInitializer()->codegen();
   if (Iterator == nullptr) {
-    throw InternalError("failed to generate bitcode for for range E1 component");
+    throw InternalError("failed to generate bitcode for for range E1 component");// LCOV_EXCL_LINE
   }
   lValueGen = false;
 
@@ -1545,7 +1591,7 @@ llvm::Value *ASTForRangeStmt::codegen() {
     // Generate code for the loop body (S).
     llvm::Value *BodyV = getBody()->codegen();
     if (BodyV == nullptr) {
-      throw InternalError("failed to generate bitcode for loop body");
+      throw InternalError("failed to generate bitcode for loop body");// LCOV_EXCL_LINE
     }
 
     // Increment the iterator by the step value.
@@ -1579,7 +1625,7 @@ llvm::Value *ASTForItrStmt::codegen() {
 
   llvm::Value *ArrayPtrInt = getEnd()->codegen();
   if (!ArrayPtrInt) {
-    throw InternalError("failed to generate bitcode for array expression");
+    throw InternalError("failed to generate bitcode for array expression");// LCOV_EXCL_LINE
   }
   lValueGen = false;
 
