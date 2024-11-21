@@ -1,0 +1,7 @@
+main() {
+    var x, y;
+    y--;
+    x = [9 of 1];
+    if (x[1] !=1) error 8;
+    return x[1];
+}

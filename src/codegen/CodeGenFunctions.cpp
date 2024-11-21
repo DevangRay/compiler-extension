@@ -1262,27 +1262,42 @@ llvm::Value *ASTArrayRepExpr::codegen() {
 
   lValueGen = true;
   llvm::Value *arity = getStart()->codegen();
+  lValueGen = false;
   if (!arity) {
     throw InternalError("Error getting arity of array");
   }
-  lValueGen = false;
+
+  llvm::Value *newArity = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "newArity");
+//  llvm::Value *loadArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+  llvm::Value *updatedArity = irBuilder.CreateAdd(arity, oneV, "incrementedArity");
+  irBuilder.CreateStore(updatedArity, newArity);
 
   llvm::Value *value = getEnd()->codegen();
   if (!value) {
     throw InternalError("Error getting repeat value of array");
   }
 
-  llvm::Value *index = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "index");
-  irBuilder.CreateStore(zeroV, index);
-
   //calloc Array
   std::vector<llvm::Value *> twoArg;
-//  llvm::Value *currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+  llvm::Value *loadNewArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), newArity, "loadNewArity");
   twoArg.push_back(
-    arity);
+      loadNewArity
+      );
   twoArg.push_back(
       llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 8));
   auto *arrayAlloc = irBuilder.CreateCall(callocFun, twoArg, "arrayPtr");
+
+  //set [0] to length of array
+  llvm::Value *constantLengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> lengthIndex = {
+    constantLengthIndex
+};
+  llvm::Value *lengthElementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, constantLengthIndex, "elementptr");
+  irBuilder.CreateStore(arity, lengthElementPtr);
+
+  //Create index (initialized at 1) to fill Array
+  llvm::Value *index = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "index");
+  irBuilder.CreateStore(oneV, index);
 
   //Create Header, Body, Exit Labels
   labelNum++;
@@ -1301,7 +1316,7 @@ llvm::Value *ASTArrayRepExpr::codegen() {
       llvm::Value *currIndex = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), index, "currIndex");
 //      currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
 //      llvm::Value *CondV = irBuilder.CreateICmpSGT(currArity, zeroV, "gtZeroCond");
-      llvm::Value *CondV = irBuilder.CreateICmpSLT(currIndex, arity, "ltLenCond");
+      llvm::Value *CondV = irBuilder.CreateICmpSLT(currIndex, loadNewArity, "ltLenCond");
 
       irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
   }

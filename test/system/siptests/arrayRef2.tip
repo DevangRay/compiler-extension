@@ -1,0 +1,7 @@
+main() {
+    var x, y;
+    y++;
+    x = [9 of -1];
+    x[0] = 939;
+    return x[0];
+}
