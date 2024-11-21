@@ -1456,7 +1456,7 @@ llvm::Value *ASTForRangeStmt::codegen() {
   return irBuilder.CreateCall(nop);
 }
 
-/*
+
 llvm::Value *ASTForItrStmt::codegen() {
   LOG_S(1) << "Generating code for " << *this;
 
@@ -1478,21 +1478,25 @@ llvm::Value *ASTForItrStmt::codegen() {
   if (!Iterator) {
     throw InternalError("failed to generate bitcode for for range E1 component");
   }
-  lValueGen = false;
 
   // Evaluate the array (E2) and determine its size.
 
-  llvm::Value *ArrayPtr = getEnd()->codegen();
-  if (!ArrayPtr) {
+  llvm::Value *ArrayPtrInt = getEnd()->codegen();
+  if (!ArrayPtrInt) {
     throw InternalError("failed to generate bitcode for array expression");
   }
+  lValueGen = false;
 
   // Allocate an index variable to track the current position in the array.
-  llvm::Type *IntType = llvm::Type::getInt32Ty(llvmContext);
+  llvm::Type *IntType = llvm::Type::getInt64Ty(llvmContext);
   llvm::Value *Index = irBuilder.CreateAlloca(IntType, nullptr, "index");
   irBuilder.CreateStore(llvm::ConstantInt::get(IntType, 0), Index);
 
-  // Branch to the loop header.
+  auto ArrayPtr = irBuilder.CreateIntToPtr(ArrayPtrInt, llvm::PointerType::get(llvmContext, 0), "arrayptr");
+
+  llvm::Value *ArSize = irBuilder.CreateLoad(IntType, ArrayPtr, "size");
+
+  //Branch to the loop header.
   irBuilder.CreateBr(HeaderBB);
 
   // Emit the loop header.
@@ -1503,7 +1507,7 @@ llvm::Value *ASTForItrStmt::codegen() {
     llvm::Value *CurIndex = irBuilder.CreateLoad(IntType, Index, "curIndex");
 
     // Compare the current index with the array size.
-    llvm::Value *CondV = irBuilder.CreateICmpSLT(CurIndex, ArraySize, "foreach.cond");
+    llvm::Value *CondV = irBuilder.CreateICmpSLT(CurIndex, ArSize, "foreach.cond");
 
     // Branch to the body if the condition is true; otherwise, exit the loop.
     irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
@@ -1516,14 +1520,13 @@ llvm::Value *ASTForItrStmt::codegen() {
 
     // Calculate the pointer to the current array element.
     llvm::Value *ElementPtr = irBuilder.CreateGEP(
-        ArrayPtr->getType()->getPointerElementType(), ArrayPtr,
+        llvm::Type::getInt64Ty(llvmContext), ArrayPtr,
         irBuilder.CreateLoad(IntType, Index), "elementPtr");
 
     // Load the current element and assign it to E1.
     llvm::Value *Element = irBuilder.CreateLoad(
-        ElementPtr->getType()->getPointerElementType(), ElementPtr, "element");
-    getIterator()->codegenAssign(Element);
-
+        llvm::Type::getInt64Ty(llvmContext), ElementPtr, "element");
+	irBuilder.CreateStore(Element, Iterator);
     // Generate code for the loop body (S).
     llvm::Value *BodyV = getBody()->codegen();
     if (!BodyV) {
@@ -1548,4 +1551,3 @@ llvm::Value *ASTForItrStmt::codegen() {
   // No explicit return value; returning a "nop" or null equivalent.
   return irBuilder.CreateCall(nop);
 }
-*/
