@@ -1,0 +1,7 @@
+main(){
+    var x;
+    for ( x : 0 .. 4 by 3){
+        output x;
+    }
+    return x;
+}
