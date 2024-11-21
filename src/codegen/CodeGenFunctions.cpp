@@ -1399,8 +1399,7 @@ llvm::Value *ASTArrayRefExpr::codegen() {
       errorIntrinsic = llvm::Function::Create(FT, llvm::Function::ExternalLinkage,
                                               "_tip_error", CurrentModule.get());
     }
-    llvm::Value *errorVal = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), -1);
-    std::vector<llvm::Value *> ArgsV(1, errorVal);
+    std::vector<llvm::Value *> ArgsV(1, index);
 
     irBuilder.CreateCall(errorIntrinsic, ArgsV);
     irBuilder.CreateBr(lenNormal);
