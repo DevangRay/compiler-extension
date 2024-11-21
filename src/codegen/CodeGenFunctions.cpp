@@ -98,7 +98,6 @@ llvm::Constant *oneV =
  */
 
 llvm::Function *getFunction(const std::string& functionName) {
-//  std::cout << "start of function\n\n\n";
   auto formalNames = functionFormalNames[functionName];
 
   /*
@@ -167,7 +166,6 @@ std::shared_ptr<llvm::Module>
 ASTProgram::codegen(SemanticAnalysis *semanticAnalysis,
                     const std::string &programName) {
   LOG_S(1) << "Generating code for program " << programName;
-//  std::cout << "even reached astprogram??\n\n\n";
 
   auto TheModule = std::make_shared<llvm::Module>(programName, llvmContext);
 
@@ -481,7 +479,7 @@ llvm::Value *ASTBinaryExpr::codegen() {
         irBuilder.SetInsertPoint(evalRightBlock);
         llvm::Value *R = getRight()->codegen();
         if (R == nullptr) {
-            throw InternalError("null right binary operand");
+            throw InternalError("null right binary operand"); // LCOV_EXCL_LINE
         }
 	    irBuilder.CreateStore(R, result);
         irBuilder.CreateBr(endBlock);
@@ -873,7 +871,6 @@ llvm::Value *ASTDeclStmt::codegen() {
 
 llvm::Value *ASTAssignStmt::codegen() {
   LOG_S(1) << "Generating code for " << *this;
-//  std::cout << "seg fault in assign stmt?\n\n\n\n";
 
   // trigger code generation for l-value expressions
   lValueGen = true;
@@ -1140,7 +1137,7 @@ llvm::Value *ASTIncrementStmt::codegen() {
   llvm::Value *incrementedVal = irBuilder.CreateAdd(
       currentVal,
       oneV,
-      "incremtemp"
+      "incrementTmp"
   );
 
   lValueGen = true;
@@ -1161,7 +1158,7 @@ llvm::Value *ASTDecrementStmt::codegen() {
   llvm::Value *decrementedVal = irBuilder.CreateSub(
       currentVal,
       oneV,
-      "incremtemp"
+      "decrementTmp"
   );
 
   lValueGen = true;
@@ -1175,29 +1172,75 @@ llvm::Value *ASTTernaryExpr::codegen() {
   LOG_S(1) << "Generating code for " << *this;
 
   llvm::Value *CondV = getCondition()->codegen();
-  if (CondV == nullptr) {
+  if (!CondV || CondV == nullptr) {
     throw InternalError(
         "Failed to generate bitcode for the condition of ternary expression, E1"
     );
   }
 
   CondV = irBuilder.CreateICmpNE(CondV, llvm::ConstantInt::get(CondV->getType(), 0), "ifcond");
+  llvm::Value *retValuePtr = CreateEntryBlockAlloca(irBuilder.GetInsertBlock()->getParent(), "retValuePtr");
 
-  llvm::Value *ThenV = getThen()->codegen();
-  if (ThenV == nullptr) {
-    throw InternalError(
+  llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+  labelNum++; // create shared labels for these BBs
+
+  llvm::BasicBlock *ThenBB = llvm::BasicBlock::Create(
+      llvmContext, "then" + std::to_string(labelNum), TheFunction);
+  llvm::BasicBlock *ElseBB =
+      llvm::BasicBlock::Create(llvmContext, "else" + std::to_string(labelNum));
+  llvm::BasicBlock *MergeBB = llvm::BasicBlock::Create(
+      llvmContext, "ifmerge" + std::to_string(labelNum));
+
+  irBuilder.CreateCondBr(CondV, ThenBB, ElseBB);
+
+  {
+    irBuilder.SetInsertPoint(ThenBB);
+
+    llvm::Value *ThenV = getThen()->codegen();
+    if (!ThenV || ThenV == nullptr) {
+      throw InternalError(// LCOV_EXCL_LINE
         "Failed to generate bitcode for the then expr of ternary expression, E2"
-    );
+      );// LCOV_EXCL_LINE
+    }
+
+    irBuilder.CreateStore(ThenV, retValuePtr);
+    irBuilder.CreateBr(MergeBB);
   }
 
-  llvm::Value *ElseV = getElse()->codegen();
-  if (ElseV == nullptr) {
-    throw InternalError(
+  {
+    TheFunction->insert(TheFunction->end(), ElseBB);
+    irBuilder.SetInsertPoint(ElseBB);
+
+    llvm::Value *ElseV = getElse()->codegen();
+    if (!ElseV || ElseV == nullptr) {
+      throw InternalError(// LCOV_EXCL_LINE
         "Failed to generate bitcode for the else expr of ternary expression, E3"
-    );
+      );// LCOV_EXCL_LINE
+    }
+
+    irBuilder.CreateStore(ElseV, retValuePtr);
+    irBuilder.CreateBr(MergeBB);
   }
 
-  return irBuilder.CreateSelect(CondV, ThenV, ElseV, "selectTmp");
+  TheFunction->insert(TheFunction->end(), MergeBB);
+  irBuilder.SetInsertPoint(MergeBB);
+  return irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), retValuePtr, "retValue");
+
+//  llvm::Value *ThenV = getThen()->codegen();
+//  if (ThenV == nullptr) {
+//    throw InternalError(
+//        "Failed to generate bitcode for the then expr of ternary expression, E2"
+//    );
+//  }
+//
+//  llvm::Value *ElseV = getElse()->codegen();
+//  if (ElseV == nullptr) {
+//    throw InternalError(
+//        "Failed to generate bitcode for the else expr of ternary expression, E3"
+//    );
+//  }
+//
+//  return irBuilder.CreateSelect(CondV, ThenV, ElseV, "selectTmp");
 }
 
 llvm::Value *ASTTrueExpr::codegen() {
@@ -1220,7 +1263,7 @@ llvm::Value *ASTArrayExpr::codegen() {
   for (auto &expr : getActuals()) {
     llvm::Value *element = expr->codegen();
     if (!element) {
-      throw InternalError("Error generating code for array element");
+      throw InternalError("Error generating code for array element");// LCOV_EXCL_LINE
     }
     elementValues.push_back(element);
   }
@@ -1259,54 +1302,99 @@ llvm::Value *ASTArrayExpr::codegen() {
 }
 
 llvm::Value *ASTArrayRepExpr::codegen() {
-//  std::cout << "HERE\n\n\n";
+  //can't assume start (arity) or end (value) have l-value
+  //how to
   LOG_S(1) << "Generating code for " << *this;
 
-  //  llvm::LLVMContext &context = llvm::getGlobalContext(); // Adjust if you're using a different context.
-  //  llvm::IRBuilder<> &builder = getCurrentBuilder();      // Retrieve the current IRBuilder.
-  //  llvm::Module *module = getCurrentModule();             // Retrieve the current LLVM Module.
-
-  // Step 1: Generate the LLVM IR for each element in the array.
-  llvm::Value *ptrSize = getStart()->codegen();
-  llvm::ConstantInt *constPtrSize = llvm::dyn_cast<llvm::ConstantInt>(ptrSize);
-  int intSize = constPtrSize->getSExtValue();
-
-  std::vector<llvm::Value *> elementValues;
-  for (size_t j = 0; j < intSize; ++j) {
-    llvm::Value *element = getEnd()->codegen();
-//    llvm::Value *element = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 2);
-    if (!element) {
-      throw InternalError("Error generating code for array element");
-    }
-    elementValues.push_back(element);
+  lValueGen = true;
+  llvm::Value *arity = getStart()->codegen();
+  lValueGen = false;
+  if (!arity) {
+    throw InternalError("Error getting arity of array");// LCOV_EXCL_LINE
   }
 
-  // Step 2: Determine the array type.
-  //  if (elementValues.empty()) {
-  //    throw InternalError("Error: Cannot generate code for empty array.");
-  //  }
-  //  llvm::Type *elementType = elementValues[0]->getType(); // Assuming all elements are the same type.
-  //  llvm::ArrayType *arrayType = llvm::ArrayType::get(elementType, elementValues.size());
+  llvm::Value *newArity = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "newArity");
+//  llvm::Value *loadArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+  llvm::Value *updatedArity = irBuilder.CreateAdd(arity, oneV, "incrementedArity");
+  irBuilder.CreateStore(updatedArity, newArity);
 
-  // Step 3: Allocate memory for the array.
+  llvm::Value *value = getEnd()->codegen();
+  if (!value) {
+    throw InternalError("Error getting repeat value of array");// LCOV_EXCL_LINE
+  }
+
+  //calloc Array
   std::vector<llvm::Value *> twoArg;
+  llvm::Value *loadNewArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), newArity, "loadNewArity");
   twoArg.push_back(
-    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()));
+      loadNewArity
+      );
   twoArg.push_back(
       llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 8));
   auto *arrayAlloc = irBuilder.CreateCall(callocFun, twoArg, "arrayPtr");
 
-  // Step 4: Initialize the array elements.
-  for (size_t i = 0; i < elementValues.size(); ++i) {
-    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i);
-    std::vector<llvm::Value *> indices = {
-      index // Element index
-  };
-    llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
-    irBuilder.CreateStore(elementValues[i], elementPtr);
+  //set [0] to length of array
+  llvm::Value *constantLengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> lengthIndex = {
+    constantLengthIndex
+};
+  llvm::Value *lengthElementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, constantLengthIndex, "elementptr");
+  irBuilder.CreateStore(arity, lengthElementPtr);
+
+  //Create index (initialized at 1) to fill Array
+  llvm::Value *index = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "index");
+  irBuilder.CreateStore(oneV, index);
+
+  //Create Header, Body, Exit Labels
+  labelNum++;
+  llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+  llvm::BasicBlock *HeaderBB = llvm::BasicBlock::Create(llvmContext, "header" + std::to_string(labelNum), TheFunction);
+  llvm::BasicBlock *BodyBB = llvm::BasicBlock::Create(llvmContext, "body" + std::to_string(labelNum));
+  llvm::BasicBlock *ExitBB = llvm::BasicBlock::Create(llvmContext, "exit" + std::to_string(labelNum));
+
+  //jump to header
+  irBuilder.CreateBr(HeaderBB);
+
+  {
+    //Create Header
+      irBuilder.SetInsertPoint(HeaderBB);
+
+      llvm::Value *currIndex = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), index, "currIndex");
+//      currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+//      llvm::Value *CondV = irBuilder.CreateICmpSGT(currArity, zeroV, "gtZeroCond");
+      llvm::Value *CondV = irBuilder.CreateICmpSLT(currIndex, loadNewArity, "ltLenCond");
+
+      irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
   }
 
-  // Step 5: Return a pointer to the array.
+  {
+    //Create Body
+    TheFunction->insert(TheFunction->end(), BodyBB);
+    irBuilder.SetInsertPoint(BodyBB);
+
+    //currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+    llvm::Value *currIndex = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), index, "currIndex");
+    std::vector<llvm::Value *> indices = {
+//      currArity
+        currIndex
+      };
+    llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
+    irBuilder.CreateStore(value, elementPtr);
+
+//    currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+    llvm::Value *newIndex = irBuilder.CreateAdd(currIndex, oneV, "newIndex");
+    irBuilder.CreateStore(newIndex, index);
+//    irBuilder.CreateStore(decrementArity, currentArityPtr);
+
+//    llvm::Value *incrementIndex = irBuilder.CreateAdd(index, oneV, "incrementIndex");
+//    irBuilder.CreateStore(incrementIndex, index);
+
+    irBuilder.CreateBr(HeaderBB);
+  }
+
+  //Create Exit
+  TheFunction->insert(TheFunction->end(), ExitBB);
+  irBuilder.SetInsertPoint(ExitBB);
   return arrayAlloc;
 }
 
@@ -1317,51 +1405,87 @@ llvm::Value *ASTArrayRefExpr::codegen() {
   lValueGen = false;
 
   llvm::Value *array = getArray()->codegen();
-  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
   if (!array) {
-      throw InternalError("Error finding array for referencing");
+    throw InternalError("Error finding array for referencing");// LCOV_EXCL_LINE
   }
+  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
+
+  //  Get length of the array
+  llvm::Value *lengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> indices = {
+    lengthIndex
+  };
+  auto *arrayLenGep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "arrayLenPtr");
+  auto arrayLenLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), arrayLenGep, "retrievedArrLenValue");
+  auto arrayLenValue =  irBuilder.CreatePtrToInt(arrayLenLoad, llvm::Type::getInt64Ty(llvmContext), "arrayLenValue");
 
   llvm::Value *index = getIndex()->codegen();
   if (!index) {
-    throw InternalError("Error finding index for referencing");
+    throw InternalError("Error finding index for referencing");// LCOV_EXCL_LINE
+  }
+   labelNum++;
+   llvm::Value *geCheck = irBuilder.CreateICmpSGE(index, arrayLenLoad, "gteLenCond");
+   llvm::Value *lCheck = irBuilder.CreateICmpSLT(index, zeroV, "ltZeroCond");
+   llvm::Value *orCheck = irBuilder.CreateOr(geCheck, lCheck, "ltZeroOrgteLen");
+
+ //bounds check
+   llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+   llvm::BasicBlock *lenError = llvm::BasicBlock::Create(llvmContext, "error" + std::to_string(labelNum), TheFunction);
+   llvm::BasicBlock *lenNormal = llvm::BasicBlock::Create(llvmContext, "normal" + std::to_string(labelNum), TheFunction);
+
+  irBuilder.CreateCondBr(orCheck, lenError, lenNormal);
+
+  {
+    irBuilder.SetInsertPoint(lenError);
+    //THROW ERROR
+    if (errorIntrinsic == nullptr) {
+      std::vector<llvm::Type *> oneInt(1, llvm::Type::getInt64Ty(llvmContext));
+      auto *FT = llvm::FunctionType::get(llvm::Type::getInt64Ty(llvmContext),
+                                         oneInt, false);
+      errorIntrinsic = llvm::Function::Create(FT, llvm::Function::ExternalLinkage,
+                                              "_tip_error", CurrentModule.get());
+    }
+    std::vector<llvm::Value *> ArgsV(1, index);
+
+    irBuilder.CreateCall(errorIntrinsic, ArgsV);
+    irBuilder.CreateBr(lenNormal);
   }
 
-  llvm::ConstantInt *constIndex = llvm::dyn_cast<llvm::ConstantInt>(index);
-  int intIndex = constIndex->getSExtValue() + 1;
-  llvm::Value *newIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), intIndex);
 
-  std::vector<llvm::Value *> indices = {
+    irBuilder.SetInsertPoint(lenNormal);
+    llvm::Value *newIndex = irBuilder.CreateAdd(index, oneV, "newIndex");
+
+    indices = {// LCOV_EXCL_LINE
       newIndex
   };
 
-  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
-  if (isLValue) {
-    return gep;
-  }
+    auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
+    if (isLValue) {
+      return gep;
+    }
 
-  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
-  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
+    auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
+    return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
 }
 
 llvm::Value* ASTArrayLenExpr::codegen() {
   LOG_S(1) << "Generating code for ASTArrayLenExpr";
 
   llvm::Value *array = getArray()->codegen();
-  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
   if (!array) {
-    throw InternalError("Error finding array for referencing");
+    throw InternalError("Error finding array for referencing");// LCOV_EXCL_LINE
   }
+  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayLenPtrToInt");
 
   llvm::Value *lengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
   std::vector<llvm::Value *> indices = {
     lengthIndex
   };
 
-  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
-  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
+  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementPtrToArrayLen");
+  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrieveArrLen");
 
-  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
+  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext), "arrLenValue");
 }
 
 //END SIP Extension
@@ -1423,7 +1547,7 @@ llvm::Value *ASTForRangeStmt::codegen() {
 
   llvm::Value *Iterator = getInitializer()->codegen();
   if (Iterator == nullptr) {
-    throw InternalError("failed to generate bitcode for for range E1 component");
+    throw InternalError("failed to generate bitcode for for range E1 component");// LCOV_EXCL_LINE
   }
   lValueGen = false;
 
@@ -1467,7 +1591,7 @@ llvm::Value *ASTForRangeStmt::codegen() {
     // Generate code for the loop body (S).
     llvm::Value *BodyV = getBody()->codegen();
     if (BodyV == nullptr) {
-      throw InternalError("failed to generate bitcode for loop body");
+      throw InternalError("failed to generate bitcode for loop body");// LCOV_EXCL_LINE
     }
 
     // Increment the iterator by the step value.
@@ -1501,7 +1625,7 @@ llvm::Value *ASTForItrStmt::codegen() {
 
   llvm::Value *ArrayPtrInt = getEnd()->codegen();
   if (!ArrayPtrInt) {
-    throw InternalError("failed to generate bitcode for array expression");
+    throw InternalError("failed to generate bitcode for array expression");// LCOV_EXCL_LINE
   }
   lValueGen = false;
 
