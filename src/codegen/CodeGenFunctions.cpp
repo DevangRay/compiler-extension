@@ -98,7 +98,6 @@ llvm::Constant *oneV =
  */
 
 llvm::Function *getFunction(const std::string& functionName) {
-//  std::cout << "start of function\n\n\n";
   auto formalNames = functionFormalNames[functionName];
 
   /*
@@ -167,7 +166,6 @@ std::shared_ptr<llvm::Module>
 ASTProgram::codegen(SemanticAnalysis *semanticAnalysis,
                     const std::string &programName) {
   LOG_S(1) << "Generating code for program " << programName;
-//  std::cout << "even reached astprogram??\n\n\n";
 
   auto TheModule = std::make_shared<llvm::Module>(programName, llvmContext);
 
@@ -806,7 +804,6 @@ llvm::Value *ASTDeclStmt::codegen() {
 
 llvm::Value *ASTAssignStmt::codegen() {
   LOG_S(1) << "Generating code for " << *this;
-//  std::cout << "seg fault in assign stmt?\n\n\n\n";
 
   // trigger code generation for l-value expressions
   lValueGen = true;
@@ -1073,7 +1070,7 @@ llvm::Value *ASTIncrementStmt::codegen() {
   llvm::Value *incrementedVal = irBuilder.CreateAdd(
       currentVal,
       oneV,
-      "incremtemp"
+      "incrementTmp"
   );
 
   lValueGen = true;
@@ -1094,7 +1091,7 @@ llvm::Value *ASTDecrementStmt::codegen() {
   llvm::Value *decrementedVal = irBuilder.CreateSub(
       currentVal,
       oneV,
-      "incremtemp"
+      "decrementTmp"
   );
 
   lValueGen = true;
@@ -1250,51 +1247,88 @@ llvm::Value *ASTArrayRefExpr::codegen() {
   lValueGen = false;
 
   llvm::Value *array = getArray()->codegen();
-  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
   if (!array) {
-      throw InternalError("Error finding array for referencing");
+    throw InternalError("Error finding array for referencing");
   }
+  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
+
+  //  Get length of the array
+  llvm::Value *lengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> indices = {
+    lengthIndex
+  };
+  auto *arrayLenGep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "arrayLenPtr");
+  auto arrayLenLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), arrayLenGep, "retrievedArrLenValue");
+  auto arrayLenValue =  irBuilder.CreatePtrToInt(arrayLenLoad, llvm::Type::getInt64Ty(llvmContext), "arrayLenValue");
 
   llvm::Value *index = getIndex()->codegen();
   if (!index) {
     throw InternalError("Error finding index for referencing");
   }
+   labelNum++;
+   llvm::Value *geCheck = irBuilder.CreateICmpSGE(index, arrayLenLoad, "gteLenCond");
+   llvm::Value *lCheck = irBuilder.CreateICmpSLT(index, zeroV, "ltZeroCond");
+   llvm::Value *orCheck = irBuilder.CreateOr(geCheck, lCheck, "ltZeroOrgteLen");
 
-  llvm::ConstantInt *constIndex = llvm::dyn_cast<llvm::ConstantInt>(index);
-  int intIndex = constIndex->getSExtValue() + 1;
-  llvm::Value *newIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), intIndex);
+ //bounds check
+   llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+   llvm::BasicBlock *lenError = llvm::BasicBlock::Create(llvmContext, "error" + std::to_string(labelNum), TheFunction);
+   llvm::BasicBlock *lenNormal = llvm::BasicBlock::Create(llvmContext, "normal" + std::to_string(labelNum), TheFunction);
 
-  std::vector<llvm::Value *> indices = {
+  irBuilder.CreateCondBr(orCheck, lenError, lenNormal);
+
+  {
+    irBuilder.SetInsertPoint(lenError);
+    //THROW ERROR
+    if (errorIntrinsic == nullptr) {
+      std::vector<llvm::Type *> oneInt(1, llvm::Type::getInt64Ty(llvmContext));
+      auto *FT = llvm::FunctionType::get(llvm::Type::getInt64Ty(llvmContext),
+                                         oneInt, false);
+      errorIntrinsic = llvm::Function::Create(FT, llvm::Function::ExternalLinkage,
+                                              "_tip_error", CurrentModule.get());
+    }
+    llvm::Value *errorVal = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), -1);
+    std::vector<llvm::Value *> ArgsV(1, errorVal);
+
+    irBuilder.CreateCall(errorIntrinsic, ArgsV);
+    irBuilder.CreateBr(lenNormal);
+  }
+
+
+    irBuilder.SetInsertPoint(lenNormal);
+    llvm::Value *newIndex = irBuilder.CreateAdd(index, oneV, "newIndex");
+
+    indices = {
       newIndex
   };
 
-  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
-  if (isLValue) {
-    return gep;
-  }
+    auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
+    if (isLValue) {
+      return gep;
+    }
 
-  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
-  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
+    auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
+    return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
 }
 
 llvm::Value* ASTArrayLenExpr::codegen() {
   LOG_S(1) << "Generating code for ASTArrayLenExpr";
 
   llvm::Value *array = getArray()->codegen();
-  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
   if (!array) {
     throw InternalError("Error finding array for referencing");
   }
+  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayLenPtrToInt");
 
   llvm::Value *lengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
   std::vector<llvm::Value *> indices = {
     lengthIndex
   };
 
-  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
-  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
+  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementPtrToArrayLen");
+  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrieveArrLen");
 
-  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
+  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext), "arrLenValue");
 }
 
 //END SIP Extension
