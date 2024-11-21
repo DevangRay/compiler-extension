@@ -592,7 +592,7 @@ Any ASTBuilder::visitLogicalNotExpr(TIPParser::LogicalNotExprContext *ctx){
 
   LOG_S(1) << "Built AST node " << *visitedStmt;
 
-  visitedStmt->setLocation(ctx->getStart()->getLine(),
+  visitedExpr->setLocation(ctx->getStart()->getLine(),
                          ctx->getStart()->getCharPositionInLine());
   return "";
 } // LCOV_EXCL_LINE
@@ -625,7 +625,8 @@ Any ASTBuilder::visitArrayRepExpr(TIPParser::ArrayRepExprContext *ctx) {
   LOG_S(1) << "Built AST node " << *visitedExpr;
 
   // Set source location
-  visitedStmt->setLocation(ctx->getStart()->getLine(),
+  visitedExpr->setLocation(
+      ctx->getStart()->getLine(),
                            ctx->getStart()->getCharPositionInLine());
   return "";
 } // LCOV_EXCL_LINE
@@ -638,7 +639,7 @@ Any ASTBuilder::visitArrayLenExpr(TIPParser::ArrayLenExprContext *ctx){
   LOG_S(1) << "Built AST node " << *visitedExpr;
 
   // Set source location
-  visitedStmt->setLocation(ctx->getStart()->getLine(),
+  visitedExpr->setLocation(ctx->getStart()->getLine(),
                            ctx->getStart()->getCharPositionInLine());
   return "";
 } // LCOV_EXCL_LINE
@@ -654,7 +655,7 @@ Any ASTBuilder::visitArrayRefExpr(TIPParser::ArrayRefExprContext *ctx){
   LOG_S(1) << "Built AST node " << *visitedExpr;
 
   // Set source location
-  visitedStmt->setLocation(ctx->getStart()->getLine(),
+  visitedExpr->setLocation(ctx->getStart()->getLine(),
                            ctx->getStart()->getCharPositionInLine());
   return "";
 } // LCOV_EXCL_LINE
