@@ -1256,54 +1256,84 @@ llvm::Value *ASTArrayExpr::codegen() {
 }
 
 llvm::Value *ASTArrayRepExpr::codegen() {
-//  std::cout << "HERE\n\n\n";
+  //can't assume start (arity) or end (value) have l-value
+  //how to
   LOG_S(1) << "Generating code for " << *this;
 
-  //  llvm::LLVMContext &context = llvm::getGlobalContext(); // Adjust if you're using a different context.
-  //  llvm::IRBuilder<> &builder = getCurrentBuilder();      // Retrieve the current IRBuilder.
-  //  llvm::Module *module = getCurrentModule();             // Retrieve the current LLVM Module.
+  lValueGen = true;
+  llvm::Value *arity = getStart()->codegen();
+  if (!arity) {
+    throw InternalError("Error getting arity of array");
+  }
+  lValueGen = false;
 
-  // Step 1: Generate the LLVM IR for each element in the array.
-  llvm::Value *ptrSize = getStart()->codegen();
-  llvm::ConstantInt *constPtrSize = llvm::dyn_cast<llvm::ConstantInt>(ptrSize);
-  int intSize = constPtrSize->getSExtValue();
-
-  std::vector<llvm::Value *> elementValues;
-  for (size_t j = 0; j < intSize; ++j) {
-    llvm::Value *element = getEnd()->codegen();
-//    llvm::Value *element = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 2);
-    if (!element) {
-      throw InternalError("Error generating code for array element");
-    }
-    elementValues.push_back(element);
+  llvm::Value *value = getEnd()->codegen();
+  if (!value) {
+    throw InternalError("Error getting repeat value of array");
   }
 
-  // Step 2: Determine the array type.
-  //  if (elementValues.empty()) {
-  //    throw InternalError("Error: Cannot generate code for empty array.");
-  //  }
-  //  llvm::Type *elementType = elementValues[0]->getType(); // Assuming all elements are the same type.
-  //  llvm::ArrayType *arrayType = llvm::ArrayType::get(elementType, elementValues.size());
+  llvm::Value *index = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "index");
+  irBuilder.CreateStore(zeroV, index);
 
-  // Step 3: Allocate memory for the array.
+  //calloc Array
   std::vector<llvm::Value *> twoArg;
+//  llvm::Value *currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
   twoArg.push_back(
-    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()));
+    arity);
   twoArg.push_back(
       llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 8));
   auto *arrayAlloc = irBuilder.CreateCall(callocFun, twoArg, "arrayPtr");
 
-  // Step 4: Initialize the array elements.
-  for (size_t i = 0; i < elementValues.size(); ++i) {
-    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i);
-    std::vector<llvm::Value *> indices = {
-      index // Element index
-  };
-    llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
-    irBuilder.CreateStore(elementValues[i], elementPtr);
+  //Create Header, Body, Exit Labels
+  labelNum++;
+  llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+  llvm::BasicBlock *HeaderBB = llvm::BasicBlock::Create(llvmContext, "header" + std::to_string(labelNum), TheFunction);
+  llvm::BasicBlock *BodyBB = llvm::BasicBlock::Create(llvmContext, "body" + std::to_string(labelNum));
+  llvm::BasicBlock *ExitBB = llvm::BasicBlock::Create(llvmContext, "exit" + std::to_string(labelNum));
+
+  //jump to header
+  irBuilder.CreateBr(HeaderBB);
+
+  {
+    //Create Header
+      irBuilder.SetInsertPoint(HeaderBB);
+
+      llvm::Value *currIndex = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), index, "currIndex");
+//      currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+//      llvm::Value *CondV = irBuilder.CreateICmpSGT(currArity, zeroV, "gtZeroCond");
+      llvm::Value *CondV = irBuilder.CreateICmpSLT(currIndex, arity, "ltLenCond");
+
+      irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
   }
 
-  // Step 5: Return a pointer to the array.
+  {
+    //Create Body
+    TheFunction->insert(TheFunction->end(), BodyBB);
+    irBuilder.SetInsertPoint(BodyBB);
+
+    //currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+    llvm::Value *currIndex = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), index, "currIndex");
+    std::vector<llvm::Value *> indices = {
+//      currArity
+        currIndex
+      };
+    llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
+    irBuilder.CreateStore(value, elementPtr);
+
+//    currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
+    llvm::Value *newIndex = irBuilder.CreateAdd(currIndex, oneV, "newIndex");
+    irBuilder.CreateStore(newIndex, index);
+//    irBuilder.CreateStore(decrementArity, currentArityPtr);
+
+//    llvm::Value *incrementIndex = irBuilder.CreateAdd(index, oneV, "incrementIndex");
+//    irBuilder.CreateStore(incrementIndex, index);
+
+    irBuilder.CreateBr(HeaderBB);
+  }
+
+  //Create Exit
+  TheFunction->insert(TheFunction->end(), ExitBB);
+  irBuilder.SetInsertPoint(ExitBB);
   return arrayAlloc;
 }
 
