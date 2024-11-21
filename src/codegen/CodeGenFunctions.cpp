@@ -1491,19 +1491,6 @@ llvm::Value *ASTForRangeStmt::codegen() {
 llvm::Value *ASTForItrStmt::codegen() {
   LOG_S(1) << "Generating code for " << *this;
 
-  llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
-
-  labelNum++; // create shared labels for these BBs
-
-  llvm::BasicBlock *HeaderBB = llvm::BasicBlock::Create(
-      llvmContext, "foreach.header" + std::to_string(labelNum), TheFunction);
-  llvm::BasicBlock *BodyBB =
-      llvm::BasicBlock::Create(llvmContext, "foreach.body" + std::to_string(labelNum));
-  llvm::BasicBlock *ExitBB =
-      llvm::BasicBlock::Create(llvmContext, "foreach.exit" + std::to_string(labelNum));
-
-  // grab E1
-
   lValueGen = true;
   llvm::Value *Iterator = getStart()->codegen();
   if (!Iterator) {
@@ -1518,15 +1505,31 @@ llvm::Value *ASTForItrStmt::codegen() {
   }
   lValueGen = false;
 
+  llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
+
+  labelNum++; // create shared labels for these BBs
+
+  llvm::BasicBlock *HeaderBB = llvm::BasicBlock::Create(
+      llvmContext, "foreach.header" + std::to_string(labelNum), TheFunction);
+  llvm::BasicBlock *BodyBB =
+      llvm::BasicBlock::Create(llvmContext, "foreach.body" + std::to_string(labelNum));
+  llvm::BasicBlock *ExitBB =
+      llvm::BasicBlock::Create(llvmContext, "foreach.exit" + std::to_string(labelNum));
+
+  // grab E1
+
+
+
   // Allocate an index variable to track the current position in the array.
   llvm::Type *IntType = llvm::Type::getInt64Ty(llvmContext);
   llvm::Value *Index = irBuilder.CreateAlloca(IntType, nullptr, "index");
-  irBuilder.CreateStore(llvm::ConstantInt::get(IntType, 0), Index);
+  irBuilder.CreateStore(llvm::ConstantInt::get(IntType, 1), Index);
 
   auto ArrayPtr = irBuilder.CreateIntToPtr(ArrayPtrInt, llvm::PointerType::get(llvmContext, 0), "arrayptr");
 
-  llvm::Value *ArSize = irBuilder.CreateLoad(IntType, ArrayPtr, "size");
-
+  llvm::Value *ArSize1 = irBuilder.CreateLoad(IntType, ArrayPtr, "size");
+  // adding one to array size
+  llvm::Value *ArSize = irBuilder.CreateAdd(ArSize1, llvm::ConstantInt::get(IntType, 1));
   //Branch to the loop header.
   irBuilder.CreateBr(HeaderBB);
 
