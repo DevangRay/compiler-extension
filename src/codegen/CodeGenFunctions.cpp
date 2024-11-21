@@ -529,7 +529,6 @@ llvm::Value *ASTBinaryExpr::codegen() {
     }
 }
 
-
 /*
  * First lookup the variable in the symbol table for names and
  * if that fails, then look in the symbol table for functions.
@@ -1229,17 +1228,24 @@ llvm::Value *ASTArrayExpr::codegen() {
   // Step 3: Allocate memory for the array.
   std::vector<llvm::Value *> twoArg;
   twoArg.push_back(
-    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()));
+    llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size()+1));
   twoArg.push_back(
       llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 8));
   auto *arrayAlloc = irBuilder.CreateCall(callocFun, twoArg, "arrayPtr");
 
 
 //  llvm::AllocaInst *arrayAlloc = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), arraySize, "arraytmp");
+  llvm::Value *constantLengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> lengthIndex = {
+      constantLengthIndex
+  };
+  llvm::Value *lengthElementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, constantLengthIndex, "elementptr");
+  llvm::Value *lengthValue = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), elementValues.size());
+  irBuilder.CreateStore(lengthValue, lengthElementPtr);
 
   // Step 4: Initialize the array elements.
   for (size_t i = 0; i < elementValues.size(); ++i) {
-    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i);
+    llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), i+1);
     std::vector<llvm::Value *> indices = {
       index // Element index
   };
@@ -1321,8 +1327,12 @@ llvm::Value *ASTArrayRefExpr::codegen() {
     throw InternalError("Error finding index for referencing");
   }
 
+  llvm::ConstantInt *constIndex = llvm::dyn_cast<llvm::ConstantInt>(index);
+  int intIndex = constIndex->getSExtValue() + 1;
+  llvm::Value *newIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), intIndex);
+
   std::vector<llvm::Value *> indices = {
-      index
+      newIndex
   };
 
   auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
@@ -1333,6 +1343,27 @@ llvm::Value *ASTArrayRefExpr::codegen() {
   auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
   return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
 }
+
+llvm::Value* ASTArrayLenExpr::codegen() {
+  LOG_S(1) << "Generating code for ASTArrayLenExpr";
+
+  llvm::Value *array = getArray()->codegen();
+  llvm::Value *arrayAddress = irBuilder.CreateIntToPtr(array,llvm::PointerType::get(llvmContext, 0), "arrayPtrToInt");
+  if (!array) {
+    throw InternalError("Error finding array for referencing");
+  }
+
+  llvm::Value *lengthIndex = llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvmContext), 0);
+  std::vector<llvm::Value *> indices = {
+    lengthIndex
+  };
+
+  auto *gep = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAddress, indices, "elementptr");
+  auto arrayLoad = irBuilder.CreateLoad(llvm::IntegerType::getInt64Ty(llvmContext), gep, "retrievedArrValue");
+
+  return irBuilder.CreatePtrToInt(arrayLoad, llvm::Type::getInt64Ty(llvmContext));
+}
+
 //END SIP Extension
 
 
@@ -1456,9 +1487,23 @@ llvm::Value *ASTForRangeStmt::codegen() {
   return irBuilder.CreateCall(nop);
 }
 
-/*
+
 llvm::Value *ASTForItrStmt::codegen() {
   LOG_S(1) << "Generating code for " << *this;
+
+  lValueGen = true;
+  llvm::Value *Iterator = getStart()->codegen();
+  if (!Iterator) {
+    throw InternalError("failed to generate bitcode for for range E1 component");
+  }
+
+  // Evaluate the array (E2) and determine its size.
+
+  llvm::Value *ArrayPtrInt = getEnd()->codegen();
+  if (!ArrayPtrInt) {
+    throw InternalError("failed to generate bitcode for array expression");
+  }
+  lValueGen = false;
 
   llvm::Function *TheFunction = irBuilder.GetInsertBlock()->getParent();
 
@@ -1473,26 +1518,19 @@ llvm::Value *ASTForItrStmt::codegen() {
 
   // grab E1
 
-  lValueGen = true;
-  llvm::Value *Iterator = getStart()->codegen();
-  if (!Iterator) {
-    throw InternalError("failed to generate bitcode for for range E1 component");
-  }
-  lValueGen = false;
 
-  // Evaluate the array (E2) and determine its size.
-
-  llvm::Value *ArrayPtr = getEnd()->codegen();
-  if (!ArrayPtr) {
-    throw InternalError("failed to generate bitcode for array expression");
-  }
 
   // Allocate an index variable to track the current position in the array.
-  llvm::Type *IntType = llvm::Type::getInt32Ty(llvmContext);
+  llvm::Type *IntType = llvm::Type::getInt64Ty(llvmContext);
   llvm::Value *Index = irBuilder.CreateAlloca(IntType, nullptr, "index");
-  irBuilder.CreateStore(llvm::ConstantInt::get(IntType, 0), Index);
+  irBuilder.CreateStore(llvm::ConstantInt::get(IntType, 1), Index);
 
-  // Branch to the loop header.
+  auto ArrayPtr = irBuilder.CreateIntToPtr(ArrayPtrInt, llvm::PointerType::get(llvmContext, 0), "arrayptr");
+
+  llvm::Value *ArSize1 = irBuilder.CreateLoad(IntType, ArrayPtr, "size");
+  // adding one to array size
+  llvm::Value *ArSize = irBuilder.CreateAdd(ArSize1, llvm::ConstantInt::get(IntType, 1));
+  //Branch to the loop header.
   irBuilder.CreateBr(HeaderBB);
 
   // Emit the loop header.
@@ -1503,7 +1541,7 @@ llvm::Value *ASTForItrStmt::codegen() {
     llvm::Value *CurIndex = irBuilder.CreateLoad(IntType, Index, "curIndex");
 
     // Compare the current index with the array size.
-    llvm::Value *CondV = irBuilder.CreateICmpSLT(CurIndex, ArraySize, "foreach.cond");
+    llvm::Value *CondV = irBuilder.CreateICmpSLT(CurIndex, ArSize, "foreach.cond");
 
     // Branch to the body if the condition is true; otherwise, exit the loop.
     irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
@@ -1516,14 +1554,13 @@ llvm::Value *ASTForItrStmt::codegen() {
 
     // Calculate the pointer to the current array element.
     llvm::Value *ElementPtr = irBuilder.CreateGEP(
-        ArrayPtr->getType()->getPointerElementType(), ArrayPtr,
+        llvm::Type::getInt64Ty(llvmContext), ArrayPtr,
         irBuilder.CreateLoad(IntType, Index), "elementPtr");
 
     // Load the current element and assign it to E1.
     llvm::Value *Element = irBuilder.CreateLoad(
-        ElementPtr->getType()->getPointerElementType(), ElementPtr, "element");
-    getIterator()->codegenAssign(Element);
-
+        llvm::Type::getInt64Ty(llvmContext), ElementPtr, "element");
+	irBuilder.CreateStore(Element, Iterator);
     // Generate code for the loop body (S).
     llvm::Value *BodyV = getBody()->codegen();
     if (!BodyV) {
@@ -1548,4 +1585,3 @@ llvm::Value *ASTForItrStmt::codegen() {
   // No explicit return value; returning a "nop" or null equivalent.
   return irBuilder.CreateCall(nop);
 }
-*/

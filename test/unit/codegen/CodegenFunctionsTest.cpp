@@ -152,6 +152,34 @@ TEST_CASE("CodegenFunction: ASTForRangeStmt throws InternalError on improper S "
     REQUIRE_THROWS_AS(forRangeStmt.codegen(), InternalError);
 }
 
+TEST_CASE("CodegenFunction: ASTForItrStmt throws InternalError on wrong E1/iterator "
+          "nullptr",
+          "[CodegenFunctions]") {
+  ASTForItrStmt forItrStmt(std::make_shared<nullcodegen::MockASTExpr>(),
+                           std::make_shared<nullcodegen::MockASTExpr>(),
+                           std::make_shared<nullcodegen::MockASTStmt>());
+  REQUIRE_THROWS_AS(forItrStmt.codegen(), InternalError);
+}
+
+TEST_CASE("CodegenFunction: ASTForRangeStmt throws InternalError on improper Array "
+          "nullptr",
+          "[CodegenFunctions]") {
+    ASTForItrStmt forItrStmt(std::make_shared<ASTVariableExpr>("x"),
+                             std::make_shared<nullcodegen::MockASTExpr>(),
+                             std::make_shared<nullcodegen::MockASTStmt>());
+    REQUIRE_THROWS_AS(forItrStmt.codegen(), InternalError);
+}
+
+TEST_CASE("CodegenFunction: ASTForItrStmt throws InternalError on improper S "
+          "nullptr",
+          "[CodegenFunctions]") {
+    ASTForItrStmt forItrStmt(std::make_shared<ASTVariableExpr>("x"),
+                             std::make_shared<ASTArrayRepExpr>(std::make_shared<ASTVariableExpr>("x"),std::make_shared<ASTVariableExpr>("x")),
+                             std::make_shared<nullcodegen::MockASTStmt>());
+    REQUIRE_THROWS_AS(forItrStmt.codegen(), InternalError);
+}
+
+
 TEST_CASE(
     "CodegenFunction: ASTNegExpr throws InternalError codegen nullptr",
     "[CodegenFunctions]") {
