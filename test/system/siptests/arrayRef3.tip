@@ -1,0 +1,33 @@
+foo() {
+    return [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+}
+
+main() {
+    var x, i, j, value;
+
+    // Retrieve the 2D array from foo
+    x = foo();
+
+    // Test Case 1: Validate the size of the outer array
+    if (#x != 3) error 1; // Outer array should have 3 rows
+
+    // Test Case 2: Validate the size of the inner arrays
+    if (#x[0] != 3) error 2; // First inner array should have 3 columns
+    if (#x[1] != 3) error 3; // Second inner array should have 3 columns
+    if (#x[2] != 3) error 4; // Third inner array should have 3 columns
+
+    // Test Case 3: Validate individual elements in the 2D array
+    if (x[0][0] != 1) error 5;  // First row, first column
+    if (x[0][1] != 2) error 6;  // First row, second column
+    if (x[0][2] != 3) error 7;  // First row, third column
+
+    if (x[1][0] != 4) error 8;  // Second row, first column
+    if (x[1][1] != 5) error 9;  // Second row, second column
+    if (x[1][2] != 6) error 10; // Second row, third column
+
+    if (x[2][0] != 7) error 11; // Third row, first column
+    if (x[2][1] != 8) error 12; // Third row, second column
+    if (x[2][2] != 9) error 13; // Third row, third column
+
+    return 0;
+}

@@ -1,0 +1,55 @@
+main() {
+    // Declare all variables at the top
+    var x, y, z;
+
+    // Test Case 1: Negation of a positive integer
+    x = 5;
+    y = -x;
+    if (y != -5) error 1; // -5 is expected
+
+    // Test Case 2: Negation of a negative integer
+    x = -10;
+    y = -x;
+    if (y != 10) error 2; // 10 is expected
+
+    // Test Case 3: Negation of zero
+    x = 0;
+    y = -x;
+    if (y != 0) error 3; // 0 is expected
+
+    // Test Case 4: Double negation
+    x = 7;
+    y = -(-x);
+    if (y != 7) error 4; // Negation cancels out
+
+    // Test Case 5: Negation in arithmetic expressions
+    x = 4;
+    y = -x + 10;
+    if (y != 6) error 5; // -4 + 10 = 6
+
+    // Test Case 6: Negation with variables initialized to expressions
+    x = 3;
+    z = -x * 2;
+    if (z != -6) error 6; // -3 * 2 = -6
+
+    // Test Case 7: Negation in nested expressions
+    x = 2;
+    y = -(x + 3) * 2; // Negate the sum before multiplying
+    if (y != -10) error 7; // -(2 + 3) * 2 = -10
+
+    // Test Case 8: Large number negation
+    x = 1000000;
+    y = -x;
+    if (y != -1000000) error 8; // Large negative number
+
+    // Test Case 9: Negation and equality check
+    x = 10;
+    if (-x != -10) error 9; // Direct comparison of negated value
+
+    // Test Case 10: Negation of result from another operation
+    x = 4 * 3;
+    y = -x;
+    if (y != -12) error 10; // 4 * 3 = 12, negated to -12
+
+    return 0;
+}

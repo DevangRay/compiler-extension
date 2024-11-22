@@ -1,8 +1,9 @@
 main() {
-    var x;
+    var x, y;
     x = 6;
-    if (foo(x) != 390) error 1;
-    return 0;
+    y = foo(x);
+    if (y != 390) error y;
+    return foo(x);
 }
 
 foo(x) {
