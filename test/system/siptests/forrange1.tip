@@ -1,7 +1,9 @@
 main(){
-    var x;
+    var x,y;
+    y = 7;
     for ( x : 0 .. 4){
-        output x;
+        y = y + x;
     }
-    return x;
+    if (y != 10) error 1;
+    return 0;
 }

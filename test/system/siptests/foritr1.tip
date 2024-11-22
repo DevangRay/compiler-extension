@@ -1,7 +1,11 @@
 main(){
-    var x;
+    var x,count;
+    count = 0;
     for ( x : [1, 2,3, 4]){
         output x;
+        count++;
     }
-    return x;
+    if (count != 4) error 1;
+    if (x != 4) error 2;
+    return 0;
 }
