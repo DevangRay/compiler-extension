@@ -1178,22 +1178,6 @@ llvm::Value *ASTTernaryExpr::codegen() {
   TheFunction->insert(TheFunction->end(), MergeBB);
   irBuilder.SetInsertPoint(MergeBB);
   return irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), retValuePtr, "retValue");
-
-//  llvm::Value *ThenV = getThen()->codegen();
-//  if (ThenV == nullptr) {
-//    throw InternalError(
-//        "Failed to generate bitcode for the then expr of ternary expression, E2"
-//    );
-//  }
-//
-//  llvm::Value *ElseV = getElse()->codegen();
-//  if (ElseV == nullptr) {
-//    throw InternalError(
-//        "Failed to generate bitcode for the else expr of ternary expression, E3"
-//    );
-//  }
-//
-//  return irBuilder.CreateSelect(CondV, ThenV, ElseV, "selectTmp");
 }
 
 llvm::Value *ASTTrueExpr::codegen() {
@@ -1255,8 +1239,6 @@ llvm::Value *ASTArrayExpr::codegen() {
 }
 
 llvm::Value *ASTArrayRepExpr::codegen() {
-  //can't assume start (arity) or end (value) have l-value
-  //how to
   LOG_S(1) << "Generating code for " << *this;
 
   lValueGen = true;
@@ -1267,7 +1249,6 @@ llvm::Value *ASTArrayRepExpr::codegen() {
   }
 
   llvm::Value *newArity = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "newArity");
-//  llvm::Value *loadArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
   llvm::Value *updatedArity = irBuilder.CreateAdd(arity, oneV, "incrementedArity");
   irBuilder.CreateStore(updatedArity, newArity);
 
@@ -1313,8 +1294,6 @@ llvm::Value *ASTArrayRepExpr::codegen() {
       irBuilder.SetInsertPoint(HeaderBB);
 
       llvm::Value *currIndex = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), index, "currIndex");
-//      currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
-//      llvm::Value *CondV = irBuilder.CreateICmpSGT(currArity, zeroV, "gtZeroCond");
       llvm::Value *CondV = irBuilder.CreateICmpSLT(currIndex, loadNewArity, "ltLenCond");
 
       irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
@@ -1325,22 +1304,15 @@ llvm::Value *ASTArrayRepExpr::codegen() {
     TheFunction->insert(TheFunction->end(), BodyBB);
     irBuilder.SetInsertPoint(BodyBB);
 
-    //currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
     llvm::Value *currIndex = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), index, "currIndex");
     std::vector<llvm::Value *> indices = {
-//      currArity
         currIndex
       };
     llvm::Value *elementPtr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), arrayAlloc, indices, "elementptr");
     irBuilder.CreateStore(value, elementPtr);
 
-//    currArity = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), arity, "arity");
     llvm::Value *newIndex = irBuilder.CreateAdd(currIndex, oneV, "newIndex");
     irBuilder.CreateStore(newIndex, index);
-//    irBuilder.CreateStore(decrementArity, currentArityPtr);
-
-//    llvm::Value *incrementIndex = irBuilder.CreateAdd(index, oneV, "incrementIndex");
-//    irBuilder.CreateStore(incrementIndex, index);
 
     irBuilder.CreateBr(HeaderBB);
   }
@@ -1576,7 +1548,6 @@ llvm::Value *ASTForItrStmt::codegen() {
   }
 
   // Evaluate the array (E2) and determine its size.
-
   llvm::Value *ArrayPtrInt = getEnd()->codegen();
   if (!ArrayPtrInt) {
     throw InternalError("failed to generate bitcode for array expression");// LCOV_EXCL_LINE
