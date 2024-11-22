@@ -12,23 +12,24 @@ main() {
     if (bar() or foo()){
         y = 2;
     }
-    if (foo() and y < 3){
+    if (y == 2) error 2;
+    if (baz() and y < 3){
         y = 0;
     }
+    if (y !=0 ) error 3;
     return y;
 }
 
 foo(){
-    output 1;
+
     return false;
 }
 
 bar(){
-    output 1;
+
     return false;
 }
 
 baz(){
-    output 1;
     return true;
 }

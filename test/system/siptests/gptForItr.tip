@@ -1,0 +1,55 @@
+main() {
+    var x, count, y, sum, arr;
+    // Test Case 1: Empty array as input
+        x=0;
+        count = 0;
+        for (x : []) {
+            count++;
+        }
+        if (count != 0) error 6;
+
+    // Test Case 4: Combining `for each` with conditionals
+
+        var x, count;
+        x=0;
+        count = 0;
+        for (x : [10, 20, 30, 40, 50]) {
+            if (x % 20 == 0) count++;
+        }
+        if (count != 2) error 7;
+        if (x != 50) error 8;
+
+
+    // Test Case 8: Using the loop variable in calculations
+        x = 0;
+        sum = 0;
+        for (x : [2, 4, 6, 8]) {
+            sum += x * 2;
+        }
+        if (sum != 40) error 16;
+        if (x != 8) error 17;
+
+        x = 0;
+        y = 0;
+        count = 0;
+        for (x : [1, 2, 3]) {
+            count++;
+        }
+        for (y : [4, 5, 6, 7]) {
+            count++;
+        }
+        if (count != 7) error 18;
+        if (y != 7) error 19;
+
+
+        x =0;
+        count = 0;
+        for (x : [42]) {
+            count++;
+        }
+        if (count != 1) error 20;
+        if (x != 42) error 21;
+
+
+    return 0;
+}

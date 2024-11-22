@@ -1,0 +1,97 @@
+main() {
+    // Declare all variables at the top
+    var a, b, c, d, result, x, y, z;
+
+    // Test Case 1: Simple ternary with `and`
+    a = true;
+    b = false;
+    result = a and b ? 1 : 0;
+    if (result != 0) error 1;
+
+    // Test Case 2: Simple ternary with `or`
+    a = true;
+    b = false;
+    result = a or b ? 1 : 0;
+    if (result != 1) error 2;
+
+    // Test Case 3: Simple ternary with `not`
+    a = false;
+    result = not a ? 1 : 0;
+    if (result != 1) error 3;
+
+    // Test Case 4: Nested ternary expressions with `and` and `or`
+    a = true;
+    b = false;
+    c = true;
+    result = a and (b or c) ? (b and c ? 1 : 2) : 0;
+    if (result != 2) error 4;
+
+    // Test Case 5: Multiple conditions with `and` and `or`
+    a = true;
+    b = false;
+    c = true;
+    result = (a and b) or (not c) ? (a or b ? 1 : 3) : 0;
+    if (result != 0) error 5;
+
+    // Test Case 6: Complex ternary with numerical values
+    x = 10;
+    y = 20;
+    result = (x > y) and (y < 30) ? (x + y) : (y - x);
+    if (result != 10) error 6;
+
+    // Test Case 7: Boolean arithmetic with `not`
+    a = true;
+    result = not a ? -1 : (a and true ? 1 : 0);
+    if (result != 1) error 7;
+
+    // Test Case 8: Boolean arithmetic with chained `and`
+    x = 5;
+    y = 10;
+    result = (x < y and y > 0) ? (y - x > 5 ? 1 : 2) : 0;
+    if (result != 2) error 8;
+
+    // Test Case 9: Boolean constants with `or`
+    result = (false or true) ? (not false ? 1 : 0) : 0;
+    if (result != 1) error 9;
+
+    // Test Case 10: Edge case with `not` and false
+    result = not false ? (true or false ? 1 : 0) : -1;
+    if (result != 1) error 10;
+
+    // Test Case 11: Deeply nested ternary with `and` and `or`
+    a = true;
+    b = false;
+    c = true;
+    d = false;
+    result = a and b ? 1 : (b or c ? (c and d ? 2 : (a or d ? 3 : 4)) : 0);
+    if (result != 3) error 11;
+
+    // Test Case 12: Nested ternary with numeric comparison
+    x = 15;
+    y = 10;
+    z = 20;
+    result = x > y ? (z > x ? z : x) : (y > z ? y : z);
+    if (result != 20) error 12;
+
+    // Test Case 13: Multi-level ternary logic
+    a = true;
+    b = false;
+    c = true;
+    result = a or b ? (a and not c ? 1 : (not b and c ? 2 : 3)) : 0;
+    if (result != 2) error 13;
+
+    // Test Case 14: Combination of logic and arithmetic
+    x = 5;
+    y = 3;
+    result = (x > y) ? (x - y > 2 ? x * y : x + y) : (y - x);
+    if (result != 8) error 14;
+
+    // Test Case 15: Edge case with all false
+    a = false;
+    b = false;
+    c = false;
+    result = a or b ? (a and c ? 1 : 2) : (not b ? (not c ? 3 : 4) : 0);
+    if (result != 3) error 15;
+
+    return 0;
+}
