@@ -1,7 +1,9 @@
 main() {
     var x, y;
     x = 6;
-    return foo(x);
+    if (foo(x) != 6) error 1;
+    if (5 % 2 != 1) error 2;
+    return 0;
 }
 
 foo(x) {

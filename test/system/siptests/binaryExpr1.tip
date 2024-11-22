@@ -4,15 +4,32 @@ main() {
     y = 1;
     x = not x;
     if (x and foo()){ // check for short circuit
-        x = true;
+        error 1;
     }
-    if (x or foo()){
-        y = 1;
+    if (bar() or foo()){
+        error 1;
     }
+    if (bar() or foo()){
+        y = 2;
+    }
+    if (y == 2) error 2;
+    if (baz() and y < 3){
+        y = 0;
+    }
+    if (y !=0 ) error 3;
     return y;
 }
 
 foo(){
-    output 1;
+
     return false;
+}
+
+bar(){
+
+    return false;
+}
+
+baz(){
+    return true;
 }

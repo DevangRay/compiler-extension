@@ -6,5 +6,11 @@ main() {
     var x, y;
     y++;
     x = foo();
-    return #x;
+    if (#x != 5) error 1;
+    if (x[0] != 1) error 2;
+    if (x[1] != 2) error 3;
+    if (x[2] != 34) error 4;
+    if (x[3] != 69) error 5;
+    if (x[4] != 450) error 6;
+    return 0;
 }
