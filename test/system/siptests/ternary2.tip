@@ -1,0 +1,10 @@
+main() {
+    var x, y;
+    x = 6;
+    y = (x < 10) ?
+    true ? 420 : 4200 :
+    69 ;
+
+    if (y != 420) error y;
+    return y;
+}
