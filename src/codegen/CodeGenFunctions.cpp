@@ -427,9 +427,71 @@ llvm::Value *ASTBinaryExpr::codegen() {
     LOG_S(1) << "Generating code for " << *this;
 
     llvm::Value *L = getLeft()->codegen();
+    if (L == nullptr) {
+        throw InternalError("null left binary operand");
+    }
+
+
+    if (getOp() == "and") {
+        // Short-circuiting 'and'
+        llvm::Function *func = irBuilder.GetInsertBlock()->getParent();
+
+        // Create basic blocks for short-circuit logic
+        labelNum++;
+        llvm::BasicBlock *evalRightBlock = llvm::BasicBlock::Create(llvmContext, "and.eval.right" + std::to_string(labelNum), func);
+        llvm::BasicBlock *endBlock = llvm::BasicBlock::Create(llvmContext, "and.end" + std::to_string(labelNum), func);
+
+        // Check if L is false
+    	llvm::Value *result = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "result");
+		irBuilder.CreateStore(L, result);
+        llvm::Value *LCond = irBuilder.CreateICmpEQ(L, llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(llvmContext), 0), "and.lcond");
+        irBuilder.CreateCondBr(LCond, endBlock, evalRightBlock);
+
+        // L is true so eval right
+        irBuilder.SetInsertPoint(evalRightBlock);
+        llvm::Value *R = getRight()->codegen();
+        if (R == nullptr) {
+            throw InternalError("null right binary operand");
+        }
+	    irBuilder.CreateStore(R, result);
+        irBuilder.CreateBr(endBlock);
+
+        irBuilder.SetInsertPoint(endBlock);
+		llvm::Value *finalResult = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), result, "result");
+        return finalResult; // The last evaluation path result
+    }
+
+    else if (getOp() == "or") {
+        llvm::Function *func = irBuilder.GetInsertBlock()->getParent();
+
+        // Create basic blocks for short-circuit logic
+        labelNum++;
+        llvm::BasicBlock *evalRightBlock = llvm::BasicBlock::Create(llvmContext, "or.eval.right" + std::to_string(labelNum), func);
+        llvm::BasicBlock *endBlock = llvm::BasicBlock::Create(llvmContext, "or.end" + std::to_string(labelNum), func);
+
+        // Check if L is false
+    	llvm::Value *result = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "result");
+		irBuilder.CreateStore(L, result);
+        llvm::Value *LCond = irBuilder.CreateICmpEQ(L, llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(llvmContext), 1), "and.lcond");
+        irBuilder.CreateCondBr(LCond, endBlock, evalRightBlock);
+
+        // L is false so eval right
+        irBuilder.SetInsertPoint(evalRightBlock);
+        llvm::Value *R = getRight()->codegen();
+        if (R == nullptr) {
+            throw InternalError("null right binary operand");
+        }
+	    irBuilder.CreateStore(R, result);
+        irBuilder.CreateBr(endBlock);
+
+        irBuilder.SetInsertPoint(endBlock);
+		llvm::Value *finalResult = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), result, "result");
+        return finalResult; // The last evaluation path result
+    }
+
     llvm::Value *R = getRight()->codegen();
-    if (L == nullptr || R == nullptr) {
-        throw InternalError("null binary operand");
+    if (R == nullptr) {
+        throw InternalError("null right binary operand");
     }
 
     if (getOp() == "+") {
@@ -439,46 +501,32 @@ llvm::Value *ASTBinaryExpr::codegen() {
     } else if (getOp() == "*") {
         return irBuilder.CreateMul(L, R, "multmp");
     } else if (getOp() == "%") {
-  //making signed modulus
         return irBuilder.CreateSRem(L, R, "modtmp");
     } else if (getOp() == "/") {
         return irBuilder.CreateSDiv(L, R, "divtmp");
     } else if (getOp() == ">") {
         auto *cmp = irBuilder.CreateICmpSGT(L, R, "_gttmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "gttmp");
+        return irBuilder.CreateIntCast(cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "gttmp");
     } else if (getOp() == "<") {
         auto *cmp = irBuilder.CreateICmpSLT(L, R, "_lttmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "lttmp");
+        return irBuilder.CreateIntCast(cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "lttmp");
     } else if (getOp() == "<=") {
         auto *cmp = irBuilder.CreateICmpSLE(L, R, "_letmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "letmp");
+        return irBuilder.CreateIntCast(cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "letmp");
     } else if (getOp() == ">=") {
         auto *cmp = irBuilder.CreateICmpSGE(L, R, "_getmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "getmp");
+        return irBuilder.CreateIntCast(cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "getmp");
     } else if (getOp() == "==") {
         auto *cmp = irBuilder.CreateICmpEQ(L, R, "_eqtmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "eqtmp");
+        return irBuilder.CreateIntCast(cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "eqtmp");
     } else if (getOp() == "!=") {
         auto *cmp = irBuilder.CreateICmpNE(L, R, "_neqtmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "neqtmp");
-    } else if (getOp() == "and") { //figure out if it short circuits later
-        auto *cmp = irBuilder.CreateAnd(L, R, "andtmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "andresult");
-    } else if (getOp() == "or") { // figure out if it short circuits later
-        auto *cmp = irBuilder.CreateOr(L, R, "ortmp");
-        return irBuilder.CreateIntCast(
-            cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "orresult");
+        return irBuilder.CreateIntCast(cmp, llvm::IntegerType::getInt64Ty(llvmContext), false, "neqtmp");
     } else {
         throw InternalError("Invalid binary operator: " + getOp());
     }
 }
+
 
 /*
  * First lookup the variable in the symbol table for names and
