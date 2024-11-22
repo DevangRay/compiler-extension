@@ -1465,7 +1465,8 @@ llvm::Value *ASTLogicalNotExpr::codegen() {
   // or simply use the logical NOT directly using `CreateNot`.
   llvm::Value *NotV = irBuilder.CreateNot(OperandV, "notresult");
 
-  return NotV;
+  return irBuilder.CreateIntCast(
+            NotV, llvm::IntegerType::getInt64Ty(llvmContext), false, "letmp");;
 }
 
 llvm::Value *ASTNegExpr::codegen() {

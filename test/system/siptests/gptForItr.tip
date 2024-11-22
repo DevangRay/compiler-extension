@@ -10,7 +10,6 @@ main() {
 
     // Test Case 4: Combining `for each` with conditionals
 
-        var x, count;
         x=0;
         count = 0;
         for (x : [10, 20, 30, 40, 50]) {
@@ -24,7 +23,7 @@ main() {
         x = 0;
         sum = 0;
         for (x : [2, 4, 6, 8]) {
-            sum += x * 2;
+            sum = sum + x * 2;
         }
         if (sum != 40) error 16;
         if (x != 8) error 17;
