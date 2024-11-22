@@ -1,0 +1,78 @@
+main() {
+    // Declare all variables at the top
+    var x, y, z, result;
+
+    // Test Case 1: Pre-increment operator
+    x = 5;
+    x++;
+    if (x != 6) error 1;  // x should now be 6
+
+    // Test Case 2: Post-increment operator
+    x = 7;
+    x++;
+    if (x != 8) error 3;  // x should now be 8
+
+    // Test Case 3: Pre-decrement operator
+    x = 10;
+    x--;
+    if (x != 9) error 5;  // x should now be 9
+
+    // Test Case 4: Post-decrement operator
+    x = 3;
+    x--;
+    if (x != 2) error 7;  // x should now be 2
+
+    // Test Case 5: Increment in expressions
+    x = 4;
+    x++;
+    if (x != 5) error 9;  // x should now be 5
+
+    // Test Case 6: Decrement in expressions
+    x = 8;
+    x--;
+    if (x != 7) error 11; // x should now be 7
+
+    // Test Case 7: Multiple increments
+    x = 1;
+    x++;
+    x++;
+    if (x != 3) error 13; // x should now be 3 after two pre-increments
+
+    // Test Case 8: Multiple decrements
+    x = 5;
+    x--;
+    x--;
+    if (x != 3) error 14; // x should now be 3 after two pre-decrements
+
+    // Test Case 9: Increment and decrement in the same expression
+    x = 10;
+    x++;
+    x--;
+    x--;
+    if (x != 9) error 15; // Final value of x should be 9
+
+    // Test Case 10: Incrementing and decrementing zero
+    x = 0;
+    x++;
+    if (x != 1) error 17; // x should now be 1
+    x--;
+    if (x != 0) error 18; // x should return to 0
+
+    // Test Case 11: Large number increments and decrements
+    x = 1000000;
+    x++;
+    if (x != 1000001) error 19; // Large increment
+    x--;
+    if (x != 1000000) error 20; // Large decrement returns to original
+
+    // Test Case 12: Single iteration with increments in a loop
+    x = 0;
+
+    for (y : 0 .. 5 by 1) {
+            x = x + y;
+            x++;
+        }
+    if (x != 15) error x; // 0 + 1 + 2 + 3 + 4 = 10
+
+    return 0;
+}

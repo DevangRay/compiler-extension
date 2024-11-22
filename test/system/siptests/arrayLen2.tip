@@ -1,0 +1,6 @@
+main() {
+    var x;
+    x = [];
+    if (#x != 0) error #x;
+    return 0;
+}

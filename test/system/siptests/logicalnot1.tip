@@ -2,7 +2,7 @@ main() {
     var x, y;
     x = false;
     x = not x;
-    if (not x){
+    if (x != true){
         error 1;
     }
 
