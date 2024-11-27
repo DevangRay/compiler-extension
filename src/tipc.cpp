@@ -55,6 +55,9 @@ static cl::opt<std::string> outputfile("o", cl::value_desc("outputfile"),
 static cl::list<Optimization> OptimizationList(
     cl::desc("Available Optimizations:"),
     cl::values(
+        clEnumVal(lscfg, "Loop Simplify Control Flow Graph"),
+        clEnumVal(jt, "Jump Threading"),
+        clEnumVal(sroa, "Scalar Replacement of Aggregates"),
         clEnumVal(lsr, "Loop Strength Reduction"),
         clEnumVal(lu, "loop unrolling")),
     cl::cat(TIPcat));

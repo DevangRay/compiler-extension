@@ -8,9 +8,15 @@
 #include "llvm/Transforms/Scalar/Reassociate.h"
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
 #include "llvm/Transforms/Utils/Mem2Reg.h"
+#include "loguru.hpp"
+
+// d5
 #include "llvm/Transforms/Scalar/LoopStrengthReduce.h"
 #include "llvm/Transforms/Scalar/LoopUnrollPass.h"
-#include "loguru.hpp"
+#include "llvm/Transforms/Scalar/SROA.h"
+#include "llvm/Transforms/Scalar/LoopSimplifyCFG.h"
+#include "llvm/Transforms/Scalar/LoopInstSimplify.h"
+#include "llvm/Transforms/Scalar/JumpThreading.h"
 
 namespace { // Anonymous namespace for local function
 
@@ -76,12 +82,24 @@ void Optimizer::optimize(llvm::Module *theModule,
   if (contains(lu, enabledOpts)) {
     loopPassManager.addPass(llvm::LoopFullUnrollPass());
   }
+
+  if (contains(lscfg, enabledOpts)) {
+      loopPassManager.addPass(llvm::LoopSimplifyCFGPass());
+  }
   // Add loop pass managers with and w/out MemorySSA
   functionPassManager.addPass(
       createFunctionToLoopPassAdaptor(std::move(loopPassManagerWithMSSA),true));
 
   functionPassManager.addPass(
       createFunctionToLoopPassAdaptor(std::move(loopPassManager)));
+
+  if (contains(sroa, enabledOpts)) {
+      functionPassManager.addPass(llvm::SROAPass(llvm::SROAOptions::ModifyCFG));
+  }
+
+  if (contains(jt, enabledOpts)) {
+    functionPassManager.addPass(llvm::JumpThreadingPass());
+  }
   // Passing the function pass manager to the modulePassManager using a function
   // adaptor, then passing theModule to the ModulePassManager along with
   // ModuleAnalysisManager.

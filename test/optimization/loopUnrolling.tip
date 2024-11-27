@@ -4,7 +4,11 @@
  * Compile with and without the -lu optimization then run:
  *   time ./loopUnrolling
  * to observe the execution time of the benchmark.
- * You should be able to see a 4x speedup with loop unrolling.
+ * You should be able to see a 4-6x speedup with loop unrolling.
+ * Now add the -lscfg to the -lu optimization then run:
+ *   time ./loopUnrolling
+ * to observe the execution time of the benchmark.
+ * You should be able to see another 4-6x speedup with loop unrolling.
  */
 main() {
     var x, i;

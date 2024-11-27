@@ -4,12 +4,12 @@
 #include "llvm/Support/CommandLine.h"
 
 enum Optimization {
-    indvars,lsr, lu
+    indvars,lsr, lu, sroa, lscfg, jt
   /*
   options right now thinking about
-        loop-reduce
+        loop-reduce. Didnt work I tried, llvm bitcode didnt change at all with it in place and without
             idk what it does rn, something about array references
-        indvars
+        indvars. Didnt work I tried, dont know if I tried well enough
             which does
             for (i = 7; i*i < 1000; ++i)
             into
