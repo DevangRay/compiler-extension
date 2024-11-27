@@ -3,9 +3,9 @@ and describe the evidence that supports its unique benefit in optimizing SIP pro
 
 ## Process
 First thing I did was go here https://llvm.org/docs/Passes.html and just started reading for anything that seemed usable.
-Since SIP added arrays to TIP we first decided to explore optimizations that helped with arrays. We first found loop strength reduction which stated that "
-" then tried SROA (Scalar Representation of Aggregates) which should theoritically just turn small arrays into a series of variables/registers but it refused to work again. I think our arrays are resistant to optimization at this point.
+Since SIP added arrays to TIP we first decided to explore optimizations that helped with arrays. We first found loop strength reduction which stated that "strength reduction on array references inside loops that have as one or more of their components the loop induction variable" then tried SROA (Scalar Representation of Aggregates) which should theoritically just turn small arrays into a series of variables/registers but it refused to work again. I think our arrays are resistant to optimization at this point.
 The professor recommended poking around the clang/llvm repo for their optimizations so that's what we did. Found loop simplify cfg that way and it mentioned that it was good at cleaning up loops after other optimizations ran so I tried it after loop unrolling.
+Found jump threading after that by looking through clang repo and the llvm docs. 
 
 ## Optimizations Included
 All benchmarks can be found at
@@ -165,4 +165,4 @@ ret i64 %q.2<br>
 in the standard.
 
 Jump threading eliminated then3, ifmerge4, and then5 blocks as it realized they were unnecessary reducing the amount of instructions required, speeding up the program. 
-## Explain this one better, the why of it.
+
