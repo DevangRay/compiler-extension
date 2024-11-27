@@ -1,19 +1,20 @@
-
-foo() {
-    return [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-}
-
 main() {
-    var x, i, j, value;
-    return 0;
+    var x,y, i, j, q;
     // Retrieve the 2D array from foo
-    //x = foo();
+    x = 0;
+    y = 0;
+    q = foo();
+    for (i : q) {
+        for (j : i){
+            if (j != q[x][y]) error 1;
+            y++;
+        }
+        x++;
+        y=0;
+    }
 
-    // Test Case 4: Nested loop to validate all elements dynamically
-    //value = 0;
-    //for (i : x) {
-    //    value = i[0];
-    //}
-
-    //return value;
+    return 0;
+}
+foo(){
+    return [[1, 2, 3, 5], [4, 5, 6], [7, 8, 9]];
 }

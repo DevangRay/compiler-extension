@@ -1596,8 +1596,8 @@ llvm::Value *ASTForItrStmt::codegen() {
   }
 
   // Evaluate the array (E2) and determine its size.
-  llvm::Value *ArrayPtrInt = getEnd()->codegen();
-  if (!ArrayPtrInt) {
+  llvm::Value *ArrayPtrPtr = getEnd()->codegen();
+  if (!ArrayPtrPtr) {
     throw InternalError("failed to generate bitcode for array expression");// LCOV_EXCL_LINE
   }
   lValueGen = false;
@@ -1614,66 +1614,46 @@ llvm::Value *ASTForItrStmt::codegen() {
       llvm::BasicBlock::Create(llvmContext, "foreach.exit" + std::to_string(labelNum));
 
   // grab E1
-
-
-
-  // Allocate an index variable to track the current position in the array.
-  llvm::Type *IntType = llvm::Type::getInt64Ty(llvmContext);
-  llvm::Value *Index = irBuilder.CreateAlloca(IntType, nullptr, "index");
-  irBuilder.CreateStore(llvm::ConstantInt::get(IntType, 1), Index);
-
-  auto ArrayPtr = irBuilder.CreateIntToPtr(ArrayPtrInt, llvm::PointerType::get(llvmContext, 0), "arrayptr");
-
-  llvm::Value *ArSize1 = irBuilder.CreateLoad(IntType, ArrayPtr, "size");
-  // adding one to array size
-  llvm::Value *ArSize = irBuilder.CreateAdd(ArSize1, llvm::ConstantInt::get(IntType, 1));
+  llvm::Value *ArrayPtr;
+  if (dynamic_cast<ASTArrayExpr*>(getEnd()) != nullptr || dynamic_cast<ASTArrayRepExpr*>(getEnd()) != nullptr) {
+      ArrayPtr = irBuilder.CreateIntToPtr(ArrayPtrPtr, llvm::PointerType::get(llvmContext, 0), "ptrIntVal");
+  }
+  else {
+    ArrayPtr = irBuilder.CreateLoad(llvm::PointerType::get(llvmContext, 0), ArrayPtrPtr, "arptr");
+  }
+  llvm::Value *ArSize = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), ArrayPtr, "arsize");
+  ArSize = irBuilder.CreateAdd(ArSize, oneV, "arsize");
+  llvm::Value *indexPtr = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(llvmContext), nullptr, "index");
+  irBuilder.CreateStore(oneV, indexPtr);
   //Branch to the loop header.
   irBuilder.CreateBr(HeaderBB);
 
+
   // Emit the loop header.
-  {
+
     irBuilder.SetInsertPoint(HeaderBB);
+    llvm::Value *index = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), indexPtr, "index");
+	llvm::Value *cond = irBuilder.CreateICmpSLT(index, ArSize, "cond");
+	irBuilder.CreateCondBr(cond, BodyBB, ExitBB);
 
-    // Load the current index value.
-    llvm::Value *CurIndex = irBuilder.CreateLoad(IntType, Index, "curIndex");
-
-    // Compare the current index with the array size.
-    llvm::Value *CondV = irBuilder.CreateICmpSLT(CurIndex, ArSize, "foreach.cond");
-
-    // Branch to the body if the condition is true; otherwise, exit the loop.
-    irBuilder.CreateCondBr(CondV, BodyBB, ExitBB);
-  }
 
   // Emit the loop body.
-  {
-    TheFunction->insert(TheFunction->end(), BodyBB);
+  	TheFunction->insert(TheFunction->end(), BodyBB);
     irBuilder.SetInsertPoint(BodyBB);
 
+	llvm::Value *elementptr = irBuilder.CreateGEP(llvm::Type::getInt64Ty(llvmContext), ArrayPtr, index, "elementptr");
+    llvm::Value *element = irBuilder.CreateLoad(llvm::Type::getInt64Ty(llvmContext), elementptr, "element");
+    irBuilder.CreateStore(element, Iterator);
     // Calculate the pointer to the current array element.
-    llvm::Value *ElementPtr = irBuilder.CreateGEP(
-        llvm::Type::getInt64Ty(llvmContext), ArrayPtr,
-        irBuilder.CreateLoad(IntType, Index), "elementPtr");
 
-    // Load the current element and assign it to E1.
-    llvm::Value *Element = irBuilder.CreateLoad(
-        llvm::Type::getInt64Ty(llvmContext), ElementPtr, "element");
-	irBuilder.CreateStore(Element, Iterator);
-    // Generate code for the loop body (S).
     llvm::Value *BodyV = getBody()->codegen();
     if (!BodyV) {
       throw InternalError("failed to generate bitcode for loop body"); // LCOV_EXCL_LINE
     }
-
-    // Increment the index.
-    llvm::Value *CurIndex = irBuilder.CreateLoad(IntType, Index, "curIndex");
-    llvm::Value *NextIndex = irBuilder.CreateAdd(CurIndex,
-                                                 llvm::ConstantInt::get(IntType, 1),
-                                                 "nextIndex");
-    irBuilder.CreateStore(NextIndex, Index);
-
-    // Branch back to the header.
+    llvm::Value *nextIndex = irBuilder.CreateAdd(index, oneV, "nextindex");
+    irBuilder.CreateStore(nextIndex, indexPtr );
     irBuilder.CreateBr(HeaderBB);
-  }
+
 
   // Emit the loop exit block.
   TheFunction->insert(TheFunction->end(), ExitBB);
