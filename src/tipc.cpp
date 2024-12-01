@@ -61,7 +61,7 @@ static cl::list<Optimization> OptimizationList(
         clEnumVal(lsr, "Loop Strength Reduction"),
         clEnumVal(lu, "loop unrolling"),
         clEnumVal(intop, "function merging"),
-
+        clEnumVal(sccp, "Sparse Conditional Constant Propagation")
         ),
     cl::cat(TIPcat));
 

@@ -19,6 +19,11 @@
 #include "llvm/Transforms/Scalar/JumpThreading.h"
 #include "llvm/Transforms/IPO/GlobalDCE.h"
 #include "llvm/Transforms/IPO/MergeFunctions.h"
+#include "llvm/Analysis/CGSCCPassManager.h"
+#include "llvm/Transforms/IPO/SCCP.h"
+#include "llvm/Transforms/IPO/FunctionAttrs.h"
+#include "llvm/Transforms/IPO/ArgumentPromotion.h"
+#include "llvm/Transforms/IPO/CalledValuePropagation.h"
 
 namespace { // Anonymous namespace for local function
 
@@ -76,6 +81,24 @@ void Optimizer::optimize(llvm::Module *theModule,
 
   // Simplify the control flow graph (deleting unreachable blocks, etc).
   functionPassManager.addPass(llvm::SimplifyCFGPass());
+
+    if (contains(sccp, enabledOpts)) {
+        llvm::CGSCCPassManager CGPM;
+        CGPM.addPass(llvm::PostOrderFunctionAttrsPass());
+        CGPM.addPass(llvm::ArgumentPromotionPass());
+        CGPM.addPass(
+            llvm::createCGSCCToFunctionPassAdaptor(llvm::SROAPass(llvm::SROAOptions::ModifyCFG)));
+        modulePassManager.addPass(llvm::createModuleToPostOrderCGSCCPassAdaptor(std::move(CGPM)));
+
+        // Propagate constants at call sites into the functions they call.  This
+        // opens opportunities for globalopt (and inlining) by substituting function
+        // pointers passed as arguments to direct uses of functions.
+        modulePassManager.addPass(llvm::IPSCCPPass(false));
+
+        // Attach metadata to indirect call sites indicating the set of functions
+        // they may target at run-time. This should follow IPSCCP.
+        modulePassManager.addPass(llvm::CalledValuePropagationPass());
+    }
 
   if (contains(lsr, enabledOpts)) {
     loopPassManagerWithMSSA.addPass(llvm::LoopStrengthReducePass());

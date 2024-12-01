@@ -9,6 +9,7 @@ PROGRAM="./loopUnrolling"
 LU_FILE="loopUnrolling.tip"
 JT_FILE="jumpThreading.tip"
 INTOP_FILE="functionMerge.tip"
+SCCP_FILE="constantVariables.tip"
 
 NUM_RUNS=10
 
@@ -106,20 +107,20 @@ rm functionMerge.tip.bc
 PROGRAM="./constantVariables" # whatever the new program has to be
 
 # Run the second build command
-echo "Building $JT_FILE without extra optimizations"
-$BUILD_SCRIPT $JT_FILE
+echo "Building $SCCP_FILE without extra optimizations"
+$BUILD_SCRIPT $SCCP_FILE
 
 # Collect runtimes for the second build
-run_and_collect_times "jumpThreading without jump threading"
+run_and_collect_times "running file without SCCP"
 echo ""
 
 # Run the first build command
-echo "Building with -jt flag..."
-$BUILD_SCRIPT -jt $JT_FILE
+echo "Building with -sccp flag..."
+$BUILD_SCRIPT -sccp $SCCP_FILE
 
 # Collect runtimes for the first build
-run_and_collect_times "jumpThreading with -jt"
+run_and_collect_times "Optimizing with -sccp"
 echo ""
 
-rm jumpThreading
-rm jumpThreading.tip.bc
+rm constantVariables
+rm constantVariables.tip.bc

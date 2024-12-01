@@ -166,3 +166,124 @@ in the standard.
 
 Jump threading eliminated then3, ifmerge4, and then5 blocks as it realized they were unnecessary reducing the amount of instructions required, speeding up the program. 
 
+#### Optimization 4, Sparse Conditional Constant Propagation and Dead Code Removal
+Benchmark `constantVariables.tip` with -sccp
+
+##### Benchmark results:
+
+Building constantVariables.tip without extra optimizations<br>
+Running file without SCCP...<br>
+Total runtime for 10 runs:<br>
+2.06
+
+Building with -sccp flag...<br>
+Running Optimizing with -sccp...<br>
+Total runtime for 10 runs:<br>
+1.94
+
+Here there is approximately a 6% decrease in runtime between the optimized and non optimized versions
+
+##### .ll file comparison
+
+%calltmp = call i64 @addConstant(i64 99)
+%calltmp.neg = sub i64 0, %calltmp
+%divtmp = sdiv i64 %iter.0, %calltmp
+%subtmp = add i64 %iter.0, 99
+%addtmp = add i64 %subtmp, %calltmp.neg
+%addtmp11 = add i64 %addtmp, %divtmp
+%divtmp15 = sdiv i64 %answer.0, %addtmp11
+%iter.0.neg = sub i64 0, %iter.0
+%subtmp17 = add i64 %answer.0, %iter.0.neg
+%addtmp18 = add i64 %subtmp17, %divtmp15
+
+
+
+in the SCCP optimized one and
+
+
+
+%calltmp = call i64 @addConstant(i64 99)
+%calltmp5 = call i64 @addConstant(i64 99)
+%calltmp.neg = sub i64 0, %calltmp
+%subtmp = add i64 %calltmp.neg, %iter.0
+%divtmp = sdiv i64 %iter.0, %calltmp5
+%addtmp = add i64 %subtmp, %divtmp
+%divtmp13 = sdiv i64 %answer.0, %addtmp
+%iter.0.neg = sub i64 0, %iter.0
+%subtmp15 = add i64 %iter.0.neg, %answer.0
+%addtmp16 = add i64 %subtmp15, %divtmp13
+
+in the standard.
+
+The SCCP optimization removed dead code from the function by using a single call to addConstant to complete the necessary calculations. 
+
+#### Optimization 5, Function Merging
+Benchmark `functionMerge.tip` with -intop
+
+##### Benchmark results:
+
+Building functionMerge.tip without extra optimizations<br>
+Running file without function merging...<br>
+Total runtime for 10 runs:<br>
+6.31
+
+Building with -intop flag...<br>
+Running Optimizing with -intop...<br>
+Total runtime for 10 runs:<br>
+6.05
+
+Here there is approximately a 5% decrease in runtime between the optimized and non-optimized versions
+
+##### .ll file comparison
+
+define internal i64 @arrayAdd(i64 %x) {
+entry:
+%addtmp = add i64 %x, 10
+ret i64 %addtmp
+}
+
+define i64 @_tip_main() {
+entry:
+br label %header1
+
+header1:                                          ; preds = %body1, %entry
+%answer.0 = phi i64 [ 0, %entry ], [ %addtmp16, %body1 ]
+%iter.0 = phi i64 [ 0, %entry ], [ %incrementTmp, %body1 ]
+%_lttmp = icmp slt i64 %iter.0, 25000000
+br i1 %_lttmp, label %body1, label %exit1
+
+body1:                                            ; preds = %header1
+%calltmp = call i64 @arrayAdd(i64 99)
+%calltmp5 = call i64 @arrayAdd(i64 99)
+
+
+in the function merged optimized one and
+
+
+
+define internal i64 @arrayAdd(i64 %x) {
+entry:
+%addtmp = add i64 %x, 10
+ret i64 %addtmp
+}
+
+define internal i64 @arrayAddClone(i64 %x) {
+entry:
+%addtmp6 = add i64 %x, 10
+ret i64 %addtmp6
+}
+define i64 @_tip_main() {
+entry:
+br label %header1
+header1:                                          ; preds = %body1, %entry
+%answer.0 = phi i64 [ 0, %entry ], [ %addtmp16, %body1 ]
+%iter.0 = phi i64 [ 0, %entry ], [ %incrementTmp, %body1 ]
+%_lttmp = icmp slt i64 %iter.0, 25000000
+br i1 %_lttmp, label %body1, label %exit1
+body1:                                            ; preds = %header1
+%calltmp = call i64 @arrayAdd(i64 99)
+%calltmp5 = call i64 @arrayAddClone(i64 99)
+
+in the standard.
+
+The function merging optimization removed 2 congruent code blocks within the function and united the functionality within the program. The example did not have a very significant optimization increase but the program was more space efficient, and the optimization would have a greater effect in larger programs.  
