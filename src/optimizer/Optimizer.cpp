@@ -132,7 +132,7 @@ void Optimizer::optimize(llvm::Module *theModule,
       createModuleToFunctionPassAdaptor(std::move(functionPassManager), true));
 
     //interprocedural optimization -- optimizing by combining repetetive code within the module
-    if (contains(intop, enabledOpts)) {
+    if (contains(fm, enabledOpts)) {
         modulePassManager.addPass(llvm::GlobalDCEPass());
         modulePassManager.addPass(llvm::MergeFunctionsPass());
     }

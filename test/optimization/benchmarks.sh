@@ -8,7 +8,7 @@ BUILD_SCRIPT="../../bin/build.sh"
 PROGRAM="./loopUnrolling"
 LU_FILE="loopUnrolling.tip"
 JT_FILE="jumpThreading.tip"
-INTOP_FILE="functionMerge.tip"
+FM_FILE="functionMerge.tip"
 SCCP_FILE="constantVariables.tip"
 
 NUM_RUNS=10
@@ -86,19 +86,19 @@ rm jumpThreading.tip.bc
 PROGRAM="./functionMerge" # whatever the new program has to be
 
 # Run the second build command
-echo "Building $INTOP_FILE without extra optimizations"
-$BUILD_SCRIPT $INTOP_FILE
+echo "Building $FM_FILE without extra optimizations"
+$BUILD_SCRIPT $FM_FILE
 
 # Collect runtimes for the second build
-run_and_collect_times "running file without interprocedural optimization"
+run_and_collect_times "running file without function merging"
 echo ""
 
 # Run the first build command
-echo "Building with -intop flag..."
-$BUILD_SCRIPT -intop $INTOP_FILE
+echo "Building with -fm flag..."
+$BUILD_SCRIPT -fm $FM_FILE
 
 # Collect runtimes for the first build
-run_and_collect_times "Optimizing with -intop"
+run_and_collect_times "Optimizing with -fm"
 echo ""
 
 rm functionMerge
