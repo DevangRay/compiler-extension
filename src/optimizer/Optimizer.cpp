@@ -17,6 +17,8 @@
 #include "llvm/Transforms/Scalar/LoopSimplifyCFG.h"
 #include "llvm/Transforms/Scalar/LoopInstSimplify.h"
 #include "llvm/Transforms/Scalar/JumpThreading.h"
+#include "llvm/Transforms/IPO/GlobalDCE.h"
+#include "llvm/Transforms/IPO/MergeFunctions.h"
 
 namespace { // Anonymous namespace for local function
 
@@ -105,5 +107,12 @@ void Optimizer::optimize(llvm::Module *theModule,
   // ModuleAnalysisManager.
   modulePassManager.addPass(
       createModuleToFunctionPassAdaptor(std::move(functionPassManager), true));
+
+    //interprocedural optimization -- optimizing by combining repetetive code within the module
+    if (contains(intop, enabledOpts)) {
+        modulePassManager.addPass(llvm::GlobalDCEPass());
+        modulePassManager.addPass(llvm::MergeFunctionsPass());
+    }
+
   modulePassManager.run(*theModule, moduleAnalysisManager);
 }

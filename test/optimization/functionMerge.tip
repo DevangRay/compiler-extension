@@ -1,0 +1,32 @@
+arrayAdd(x) {
+    var y;
+    y = x + 10;
+    return y;
+}
+
+arrayAddClone(x) {
+    var y;
+    y = x + 5;
+    y = y + 2;
+    y = y + 3;
+    return y;
+}
+
+main() {
+    var arrOne, arrTwo, x, sum, answer, iter;
+
+    iter = 0;
+    while(iter < 25000000) {
+        x = 99;
+
+        arrOne = arrayAdd(x);
+        arrTwo = arrayAddClone(x);
+        //sum = arrOne[0]*iter + arrOne[7]/iter + arrTwo[1]-iter + arrTwo[2]%iter;
+        sum = iter - arrOne + iter / arrTwo;
+
+        answer = answer + (answer / sum - iter);
+        iter++;
+    }
+
+    return answer;
+}

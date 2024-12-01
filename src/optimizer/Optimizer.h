@@ -4,7 +4,7 @@
 #include "llvm/Support/CommandLine.h"
 
 enum Optimization {
-    indvars,lsr, lu, sroa, lscfg, jt
+    indvars,lsr, lu, sroa, lscfg, jt, intop, sccp
   /*
   options right now thinking about
         loop-reduce. Didnt work I tried, llvm bitcode didnt change at all with it in place and without

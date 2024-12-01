@@ -8,6 +8,8 @@ BUILD_SCRIPT="../../bin/build.sh"
 PROGRAM="./loopUnrolling"
 LU_FILE="loopUnrolling.tip"
 JT_FILE="jumpThreading.tip"
+INTOP_FILE="functionMerge.tip"
+
 NUM_RUNS=10
 
 
@@ -28,6 +30,10 @@ run_and_collect_times() {
     echo "Total runtime for 10 runs:"
     bc <<< "scale=3; $total"
 }
+
+cd ../../build
+make -j 32
+cd ../test/optimization
 
 # Run the second build command
 echo "Building $LU_FILE without extra optimizations"
@@ -56,6 +62,48 @@ rm loopUnrolling
 rm loopUnrolling.tip.bc
 
 PROGRAM="./jumpThreading" # whatever the new program has to be
+
+# Run the second build command
+echo "Building $JT_FILE without extra optimizations"
+$BUILD_SCRIPT $JT_FILE
+
+# Collect runtimes for the second build
+run_and_collect_times "jumpThreading without jump threading"
+echo ""
+
+# Run the first build command
+echo "Building with -jt flag..."
+$BUILD_SCRIPT -jt $JT_FILE
+
+# Collect runtimes for the first build
+run_and_collect_times "jumpThreading with -jt"
+echo ""
+
+rm jumpThreading
+rm jumpThreading.tip.bc
+
+PROGRAM="./functionMerge" # whatever the new program has to be
+
+# Run the second build command
+echo "Building $INTOP_FILE without extra optimizations"
+$BUILD_SCRIPT $INTOP_FILE
+
+# Collect runtimes for the second build
+run_and_collect_times "running file without interprocedural optimization"
+echo ""
+
+# Run the first build command
+echo "Building with -intop flag..."
+$BUILD_SCRIPT -intop $INTOP_FILE
+
+# Collect runtimes for the first build
+run_and_collect_times "Optimizing with -intop"
+echo ""
+
+rm functionMerge
+rm functionMerge.tip.bc
+
+PROGRAM="./constantVariables" # whatever the new program has to be
 
 # Run the second build command
 echo "Building $JT_FILE without extra optimizations"

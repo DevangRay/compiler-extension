@@ -59,7 +59,10 @@ static cl::list<Optimization> OptimizationList(
         clEnumVal(jt, "Jump Threading"),
         clEnumVal(sroa, "Scalar Replacement of Aggregates"),
         clEnumVal(lsr, "Loop Strength Reduction"),
-        clEnumVal(lu, "loop unrolling")),
+        clEnumVal(lu, "loop unrolling"),
+        clEnumVal(intop, "function merging"),
+
+        ),
     cl::cat(TIPcat));
 
 /*! \brief tipc driver.
