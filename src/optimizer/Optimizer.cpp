@@ -17,8 +17,11 @@
 #include "llvm/Transforms/Scalar/LoopSimplifyCFG.h"
 #include "llvm/Transforms/Scalar/LoopInstSimplify.h"
 #include "llvm/Transforms/Scalar/JumpThreading.h"
+
 #include "llvm/Transforms/IPO/GlobalDCE.h"
+#include "llvm/Transforms/IPO/ConstantMerge.h"
 #include "llvm/Transforms/IPO/MergeFunctions.h"
+
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/Transforms/IPO/SCCP.h"
 #include "llvm/Transforms/IPO/FunctionAttrs.h"
@@ -134,6 +137,7 @@ void Optimizer::optimize(llvm::Module *theModule,
     //interprocedural optimization -- optimizing by combining repetetive code within the module
     if (contains(fm, enabledOpts)) {
         modulePassManager.addPass(llvm::GlobalDCEPass());
+        modulePassManager.addPass(llvm::ConstantMergePass());
         modulePassManager.addPass(llvm::MergeFunctionsPass());
     }
 

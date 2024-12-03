@@ -225,14 +225,14 @@ Benchmark `functionMerge.tip` with -intop
 Building functionMerge.tip without extra optimizations<br>
 Running file without function merging...<br>
 Total runtime for 10 runs:<br>
-6.31
+11.30
 
 Building with -intop flag...<br>
 Running Optimizing with -intop...<br>
 Total runtime for 10 runs:<br>
-6.05
+10.59
 
-Here there is approximately a 5% decrease in runtime between the optimized and non-optimized versions
+Here there is approximately a 7% decrease in runtime between the optimized and non-optimized versions
 
 ##### .ll file comparison
 

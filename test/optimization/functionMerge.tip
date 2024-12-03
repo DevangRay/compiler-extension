@@ -13,7 +13,7 @@ arrayAddClone(x) {
 }
 
 main() {
-    var arrOne, arrTwo, x, sum, answer, iter;
+    var arrOne, arrTwo, three, x, sum, answer, iter;
 
     iter = 0;
     while(iter < 25000000) {
@@ -23,6 +23,7 @@ main() {
         arrTwo = arrayAddClone(x);
         //sum = arrOne[0]*iter + arrOne[7]/iter + arrTwo[1]-iter + arrTwo[2]%iter;
         sum = iter - arrOne + iter / arrTwo;
+        three = arrayAdd(arrayAddClone(arrayAdd(arrayAddClone(arrayAdd(arrayAddClone(arrayAdd(arrayAddClone(arrayAdd(x)))))))));
 
         answer = answer + (answer / sum - iter);
         iter++;
