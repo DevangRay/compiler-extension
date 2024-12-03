@@ -1,0 +1,52 @@
+/*
+ * Compile with and without the -jt optimization then run:
+ *   time ./jumpThreading
+ * to observe the execution time of the benchmark.
+ * You should be able to see a 25% speedup with loop unrolling.
+*/
+main(){
+    var y,x;
+    y = 0;
+    while ( y < 50000000){
+        x = jt( true,true );
+        y++;
+    }
+    return x;
+
+}
+jt(x,y) {
+    var q,b;
+    if (x and y){
+        q = 4;
+        b= foo(q);
+    }
+    if ( q < 3){
+        q= 8;
+        b=foo(q);
+    }
+    if ( q < 2){
+        q = 9;
+        b=foo(q);
+    }
+    if ( q < 1){
+        q = 10;
+        b=foo(q);
+    }
+    if ( q < 1){
+        q = 11;
+        b=foo(q);
+    }
+    if ( q < 0){
+        q = 12;
+        b=foo(q);
+    }
+    if ( q < -1){
+        q = 13;
+        b=foo(q);
+    }
+ return q;
+}
+
+foo(x){
+    return x%3;
+}

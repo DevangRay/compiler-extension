@@ -1,0 +1,25 @@
+addConstant(x, z) {
+    var y;
+    y = x + z;
+    return y;
+}
+
+main() {
+    var one, two, x, sum, answer, iter, arr;
+    x = 99;
+    arr = [1, 2, 3, 4];
+
+    iter = 0;
+    while(iter < 25000000) {
+
+        one = addConstant(x, arr[0]);
+        two = addConstant(x, arr[0]);
+
+        sum = (iter - one + x) + (iter % two);
+
+        answer = answer + (answer % sum - iter);
+        iter++;
+    }
+
+    return answer;
+}

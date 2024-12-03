@@ -1,0 +1,26 @@
+/*
+ * Benchmark for loop full unrolling (LU) optimization.
+ *
+ * Compile with and without the -lu optimization then run:
+ *   time ./loopUnrolling
+ * to observe the execution time of the benchmark.
+ * You should be able to see a 4-6x speedup with loop unrolling.
+ * Now add the -lscfg to the -lu optimization then run:
+ *   time ./loopUnrolling
+ * to observe the execution time of the benchmark.
+ * You should be able to see another 4-6x speedup with loop unrolling.
+ */
+main() {
+    var x, i;
+    x = 0;
+    i = 0;
+    while (x < 100000000) {
+        while ( i < 10){
+            x++;
+            i++;
+        }
+        i = 0;
+    }
+
+    return x;
+}
