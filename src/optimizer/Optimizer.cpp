@@ -22,6 +22,7 @@
 #include "llvm/Transforms/IPO/ConstantMerge.h"
 #include "llvm/Transforms/IPO/MergeFunctions.h"
 
+#include "llvm/Transforms/Instrumentation/CGProfile.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/Transforms/IPO/SCCP.h"
 #include "llvm/Transforms/IPO/FunctionAttrs.h"
@@ -92,6 +93,8 @@ void Optimizer::optimize(llvm::Module *theModule,
         CGPM.addPass(
             llvm::createCGSCCToFunctionPassAdaptor(llvm::SROAPass(llvm::SROAOptions::ModifyCFG)));
         modulePassManager.addPass(llvm::createModuleToPostOrderCGSCCPassAdaptor(std::move(CGPM)));
+
+        modulePassManager.addPass(llvm::CGProfilePass());
 
         // Propagate constants at call sites into the functions they call.  This
         // opens opportunities for globalopt (and inlining) by substituting function

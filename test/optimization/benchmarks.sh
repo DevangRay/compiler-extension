@@ -104,23 +104,23 @@ echo ""
 rm functionMerge
 rm functionMerge.tip.bc
 
-# PROGRAM="./constantVariables" # whatever the new program has to be
-#
-# # Run the second build command
-# echo "Building $SCCP_FILE without extra optimizations"
-# $BUILD_SCRIPT $SCCP_FILE
-#
-# # Collect runtimes for the second build
-# run_and_collect_times "running file without SCCP"
-# echo ""
-#
-# # Run the first build command
-# echo "Building with -sccp flag..."
-# $BUILD_SCRIPT -sccp $SCCP_FILE
-#
-# # Collect runtimes for the first build
-# run_and_collect_times "Optimizing with -sccp"
-# echo ""
-#
-# rm constantVariables
-# rm constantVariables.tip.bc
+PROGRAM="./constantVariables" # whatever the new program has to be
+
+# Run the second build command
+echo "Building $SCCP_FILE without extra optimizations"
+$BUILD_SCRIPT $SCCP_FILE
+
+# Collect runtimes for the second build
+run_and_collect_times "running file without SCCP"
+echo ""
+
+# Run the first build command
+echo "Building with -sccp flag..."
+$BUILD_SCRIPT -sccp $SCCP_FILE
+
+# Collect runtimes for the first build
+run_and_collect_times "Optimizing with -sccp"
+echo ""
+
+rm constantVariables
+rm constantVariables.tip.bc

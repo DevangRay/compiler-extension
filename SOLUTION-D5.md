@@ -174,14 +174,14 @@ Benchmark `constantVariables.tip` with -sccp
 Building constantVariables.tip without extra optimizations<br>
 Running file without SCCP...<br>
 Total runtime for 10 runs:<br>
-2.06
+7.40
 
 Building with -sccp flag...<br>
 Running Optimizing with -sccp...<br>
 Total runtime for 10 runs:<br>
-1.94
+7.11
 
-Here there is approximately a 6% decrease in runtime between the optimized and non optimized versions
+Here there is approximately a 4% decrease in runtime between the optimized and non optimized versions
 
 ##### .ll file comparison
 
