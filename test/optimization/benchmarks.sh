@@ -36,52 +36,52 @@ cd ../../build
 make -j 32
 cd ../test/optimization
 
-# # Run the second build command
-# echo "Building $LU_FILE without extra optimizations"
-# $BUILD_SCRIPT $LU_FILE
-#
-# # Collect runtimes for the second build
-# run_and_collect_times "loopUnrolling without unrolling"
-# echo ""
-#
-# # Run the first build command
-# echo "Building with -lu flag..."
-# $BUILD_SCRIPT -lu $LU_FILE
-#
-# # Collect runtimes for the first build
-# run_and_collect_times "loopUnrolling with -lu"
-# echo ""
-# # Run the first build command
-# echo "Building with -lu and -lscfg flag..."
-# $BUILD_SCRIPT -lu -lscfg $LU_FILE
-#
-# # Collect runtimes for the first build
-# run_and_collect_times "loopUnrolling with -lu and -lcsfg"
-# echo ""
-#
-# rm loopUnrolling
-# rm loopUnrolling.tip.bc
-#
-# PROGRAM="./jumpThreading" # whatever the new program has to be
-#
-# # Run the second build command
-# echo "Building $JT_FILE without extra optimizations"
-# $BUILD_SCRIPT $JT_FILE
-#
-# # Collect runtimes for the second build
-# run_and_collect_times "jumpThreading without jump threading"
-# echo ""
-#
-# # Run the first build command
-# echo "Building with -jt flag..."
-# $BUILD_SCRIPT -jt $JT_FILE
-#
-# # Collect runtimes for the first build
-# run_and_collect_times "jumpThreading with -jt"
-# echo ""
-#
-# rm jumpThreading
-# rm jumpThreading.tip.bc
+# Run the second build command
+echo "Building $LU_FILE without extra optimizations"
+$BUILD_SCRIPT $LU_FILE
+
+# Collect runtimes for the second build
+run_and_collect_times "loopUnrolling without unrolling"
+echo ""
+
+# Run the first build command
+echo "Building with -lu flag..."
+$BUILD_SCRIPT -lu $LU_FILE
+
+# Collect runtimes for the first build
+run_and_collect_times "loopUnrolling with -lu"
+echo ""
+# Run the first build command
+echo "Building with -lu and -lscfg flag..."
+$BUILD_SCRIPT -lu -lscfg $LU_FILE
+
+# Collect runtimes for the first build
+run_and_collect_times "loopUnrolling with -lu and -lcsfg"
+echo ""
+
+rm loopUnrolling
+rm loopUnrolling.tip.bc
+
+PROGRAM="./jumpThreading" # whatever the new program has to be
+
+# Run the second build command
+echo "Building $JT_FILE without extra optimizations"
+$BUILD_SCRIPT $JT_FILE
+
+# Collect runtimes for the second build
+run_and_collect_times "jumpThreading without jump threading"
+echo ""
+
+# Run the first build command
+echo "Building with -jt flag..."
+$BUILD_SCRIPT -jt $JT_FILE
+
+# Collect runtimes for the first build
+run_and_collect_times "jumpThreading with -jt"
+echo ""
+
+rm jumpThreading
+rm jumpThreading.tip.bc
 
 PROGRAM="./functionMerge" # whatever the new program has to be
 
