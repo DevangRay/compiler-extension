@@ -185,16 +185,16 @@ Here there is approximately a 4% decrease in runtime between the optimized and n
 
 ##### .ll file comparison
 
-%calltmp = call i64 @addConstant(i64 99)
-%calltmp.neg = sub i64 0, %calltmp
-%divtmp = sdiv i64 %iter.0, %calltmp
-%subtmp = add i64 %iter.0, 99
-%addtmp = add i64 %subtmp, %calltmp.neg
-%addtmp11 = add i64 %addtmp, %divtmp
-%divtmp15 = sdiv i64 %answer.0, %addtmp11
-%iter.0.neg = sub i64 0, %iter.0
-%subtmp17 = add i64 %answer.0, %iter.0.neg
-%addtmp18 = add i64 %subtmp17, %divtmp15
+%calltmp = call i64 @addConstant(i64 99) <br>
+%calltmp.neg = sub i64 0, %calltmp <br>
+%divtmp = sdiv i64 %iter.0, %calltmp <br>
+%subtmp = add i64 %iter.0, 99 <br>
+%addtmp = add i64 %subtmp, %calltmp.neg <br>
+%addtmp11 = add i64 %addtmp, %divtmp <br>
+%divtmp15 = sdiv i64 %answer.0, %addtmp11 <br>
+%iter.0.neg = sub i64 0, %iter.0 <br>
+%subtmp17 = add i64 %answer.0, %iter.0.neg <br>
+%addtmp18 = add i64 %subtmp17, %divtmp15 <br>
 
 
 
@@ -202,16 +202,16 @@ in the SCCP optimized one and
 
 
 
-%calltmp = call i64 @addConstant(i64 99)
-%calltmp5 = call i64 @addConstant(i64 99)
-%calltmp.neg = sub i64 0, %calltmp
-%subtmp = add i64 %calltmp.neg, %iter.0
-%divtmp = sdiv i64 %iter.0, %calltmp5
-%addtmp = add i64 %subtmp, %divtmp
-%divtmp13 = sdiv i64 %answer.0, %addtmp
-%iter.0.neg = sub i64 0, %iter.0
-%subtmp15 = add i64 %iter.0.neg, %answer.0
-%addtmp16 = add i64 %subtmp15, %divtmp13
+%calltmp = call i64 @addConstant(i64 99)<br>
+%calltmp5 = call i64 @addConstant(i64 99)<br>
+%calltmp.neg = sub i64 0, %calltmp<br>
+%subtmp = add i64 %calltmp.neg, %iter.0<br>
+%divtmp = sdiv i64 %iter.0, %calltmp5<br>
+%addtmp = add i64 %subtmp, %divtmp<br>
+%divtmp13 = sdiv i64 %answer.0, %addtmp<br>
+%iter.0.neg = sub i64 0, %iter.0<br>
+%subtmp15 = add i64 %iter.0.neg, %answer.0<br>
+%addtmp16 = add i64 %subtmp15, %divtmp13<br>
 
 in the standard.
 
@@ -235,54 +235,80 @@ Total runtime for 10 runs:<br>
 Here there is approximately a 7% decrease in runtime between the optimized and non-optimized versions
 
 ##### .ll file comparison
+define internal i64 @arrayAdd(i64 %x) {<br>
+entry:<br>
+%addtmp = add i64 %x, 10<br>
+ret i64 %addtmp<br>
+}<br>
 
-define internal i64 @arrayAdd(i64 %x) {
-entry:
-%addtmp = add i64 %x, 10
-ret i64 %addtmp
-}
+define i64 @_tip_main() {<br>
+entry:<br>
+br label %header1<br>
 
-define i64 @_tip_main() {
-entry:
-br label %header1
+header1:                                          ; preds = %body1, %entry<br>
+%answer.0 = phi i64 [ 0, %entry ], [ %addtmp35, %body1 ]<br>
+%iter.0 = phi i64 [ 0, %entry ], [ %incrementTmp, %body1 ]<br>
+%_lttmp = icmp slt i64 %iter.0, 25000000<br>
+br i1 %_lttmp, label %body1, label %exit1<br>
 
-header1:                                          ; preds = %body1, %entry
-%answer.0 = phi i64 [ 0, %entry ], [ %addtmp16, %body1 ]
-%iter.0 = phi i64 [ 0, %entry ], [ %incrementTmp, %body1 ]
-%_lttmp = icmp slt i64 %iter.0, 25000000
-br i1 %_lttmp, label %body1, label %exit1
-
-body1:                                            ; preds = %header1
-%calltmp = call i64 @arrayAdd(i64 99)
-%calltmp5 = call i64 @arrayAdd(i64 99)
+body1:                                            ; preds = %header1<br>
+%calltmp = call i64 @arrayAdd(i64 99)<br>
+%calltmp5 = call i64 @arrayAdd(i64 99)<br>
+%calltmp.neg = sub i64 0, %calltmp<br>
+%subtmp = add i64 %calltmp.neg, %iter.0<br>
+%divtmp = sdiv i64 %iter.0, %calltmp5<br>
+%addtmp = add i64 %subtmp, %divtmp<br>
+%calltmp20 = call i64 @arrayAdd(i64 99)<br>
+%calltmp21 = call i64 @arrayAdd(i64 %calltmp20)<br>
+%calltmp22 = call i64 @arrayAdd(i64 %calltmp21)<br>
+%calltmp23 = call i64 @arrayAdd(i64 %calltmp22)<br>
+%calltmp24 = call i64 @arrayAdd(i64 %calltmp23)<br>
+%calltmp25 = call i64 @arrayAdd(i64 %calltmp24)<br>
+%calltmp26 = call i64 @arrayAdd(i64 %calltmp25)<br>
+%calltmp27 = call i64 @arrayAdd(i64 %calltmp26)<br>
+%calltmp28 = call i64 @arrayAdd(i64 %calltmp27)<br>
 
 
 in the function merged optimized one and
 
+define internal i64 @arrayAdd(i64 %x) {<br>
+entry:<br>
+%addtmp = add i64 %x, 10<br>
+ret i64 %addtmp<br>
+}<br>
 
+define internal i64 @arrayAddClone(i64 %x) {<br>
+entry:<br>
+%addtmp6 = add i64 %x, 10<br>
+ret i64 %addtmp6<br>
+}<br>
 
-define internal i64 @arrayAdd(i64 %x) {
-entry:
-%addtmp = add i64 %x, 10
-ret i64 %addtmp
-}
+define i64 @_tip_main() {<br>
+entry:<br>
+br label %header1<br>
 
-define internal i64 @arrayAddClone(i64 %x) {
-entry:
-%addtmp6 = add i64 %x, 10
-ret i64 %addtmp6
-}
-define i64 @_tip_main() {
-entry:
-br label %header1
-header1:                                          ; preds = %body1, %entry
-%answer.0 = phi i64 [ 0, %entry ], [ %addtmp16, %body1 ]
-%iter.0 = phi i64 [ 0, %entry ], [ %incrementTmp, %body1 ]
-%_lttmp = icmp slt i64 %iter.0, 25000000
-br i1 %_lttmp, label %body1, label %exit1
-body1:                                            ; preds = %header1
-%calltmp = call i64 @arrayAdd(i64 99)
-%calltmp5 = call i64 @arrayAddClone(i64 99)
+header1:                                          ; preds = %body1, %entry<br>
+%answer.0 = phi i64 [ 0, %entry ], [ %addtmp35, %body1 ]<br>
+%iter.0 = phi i64 [ 0, %entry ], [ %incrementTmp, %body1 ]<br>
+%_lttmp = icmp slt i64 %iter.0, 25000000<br>
+br i1 %_lttmp, label %body1, label %exit1<br>
+
+body1:                                            ; preds = %header1<br>
+%calltmp = call i64 @arrayAdd(i64 99)<br>
+%calltmp5 = call i64 @arrayAddClone(i64 99)<br>
+%calltmp.neg = sub i64 0, %calltmp<br>
+%subtmp = add i64 %calltmp.neg, %iter.0<br>
+%divtmp = sdiv i64 %iter.0, %calltmp5<br>
+%addtmp = add i64 %subtmp, %divtmp<br>
+%calltmp20 = call i64 @arrayAdd(i64 99)<br>
+%calltmp21 = call i64 @arrayAddClone(i64 %calltmp20)<br>
+%calltmp22 = call i64 @arrayAdd(i64 %calltmp21)<br>
+%calltmp23 = call i64 @arrayAddClone(i64 %calltmp22)<br>
+%calltmp24 = call i64 @arrayAdd(i64 %calltmp23)<br>
+%calltmp25 = call i64 @arrayAddClone(i64 %calltmp24)<br>
+%calltmp26 = call i64 @arrayAdd(i64 %calltmp25)<br>
+%calltmp27 = call i64 @arrayAddClone(i64 %calltmp26)<br>
+%calltmp28 = call i64 @arrayAdd(i64 %calltmp27)<br>
 
 in the standard.
 
