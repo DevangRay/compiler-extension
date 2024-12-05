@@ -40,10 +40,23 @@ Total runtime for 10 runs:<br>
 
 ##### .ll file comparison
 
-In this scenario loop unrolling split the inner while loop into 10 increment statements which were then
-combined through the instruction combine pass into a singular add 10 as evidenced by looking at the .ll file where the instruction turned into
+Just the standard optimization , as you can see just a standard loop
+```
+header2:                                          ; preds = %header2.preheader, %body2
+%x.1 = phi i64 [ %incrementTmp, %body2 ], [ %x.0, %header2.preheader ]
+%i.1 = phi i64 [ %incrementTmp8, %body2 ], [ 0, %header2.preheader ]
+%_lttmp3 = icmp slt i64 %i.1, 10
+br i1 %_lttmp3, label %body2, label %header1.loopexit
 
-```header2:                                          ; preds = %header2.preheader
+body2:                                            ; preds = %header2
+%incrementTmp = add i64 %x.1, 1
+%incrementTmp8 = add i64 %i.1, 1
+br label %header2
+```
+
+After loop unrolling
+```
+header2:                                          ; preds = %header2.preheader
 br label %body2
 
 body2:                                            ; preds = %header2
@@ -77,8 +90,9 @@ body2.9:                                          ; preds = %body2.8
 %incrementTmp.9 = add i64 %x.0, 10
 br i1 false, label %body2.10, label %header1.loopexit
 ```
-
-Can be found. This effectively reduced the number of instructions by a factor of N where 
+In this scenario loop unrolling split the inner while loop into 10 increment statements which were then
+combined through the instruction combine pass into a singular add 10 as evidenced by looking at the .ll file where the instruction turned into `%incrementTmp.9 = add i64 %x.0, 10`
+This effectively reduced the number of instructions by a factor of N where 
 N is the end range of the upper loop, in this scenario 10. Here loop unrolling shows its benefit to 
 improve SIP/TIP code through providing an avenue for instruction combination.
 Further optimization appears to be required in order to prune these unnecessary headers and breaks.
@@ -102,10 +116,11 @@ Total runtime for 10 runs:<br>
 .10
 
 Approximately a 5x increase in speed as compared to just loop unrolling. 
-There was no change due to just lscfg so I omitted here. 
+There was no change in time or the .ll file due to just lscfg, so I omitted the code and runtime here. 
 ##### .ll file comparison
 
-```header2.preheader:                                ; preds = %header1
+```
+header2.preheader:                                ; preds = %header1
 %incrementTmp.9 = add i64 %x.0, 10
 br label %header1
 ```
