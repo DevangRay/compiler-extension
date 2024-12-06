@@ -17,7 +17,9 @@ https://github.com/llvm/llvm-project/blob/main/llvm/lib/Passes/PassBuilderPipeli
 example passes in the source code of the PassBuilderPipelines.cpp file. We first implemented a FunctionMerge pass, and 
 while at first adding the -fm optimization seemed to make our test program run slower, we used PassBuilderPipelines.cpp 
 as an example and added a Global DCE and Constant Merge pass. After this addition, function merge worked much better as
-an optimization pass. 
+an optimization pass. For our last optimization, we looked at SCCP - an optimization pass that removes unnecessary
+code. This pass also required to add several passes to truly optimize programs.
+
 
 
 ## Optimizations Included
@@ -127,7 +129,7 @@ Running jumpThreading with -jt...<br>
 Total runtime for 10 runs:<br>
 1.64
 
-Here there is an apprixamtely 25% decrease in runtime between the optimized and non optimized versions
+Here there is an approximately 25% decrease in runtime between the optimized and non optimized versions
 
 ##### .ll file comparison
 ```
@@ -178,7 +180,7 @@ ret i64 %q.2
 ```
 in the standard.
 
-Jump threading eliminated then3, ifmerge4, and then5 blocks as it realized they were unnecessary reducing the amount of instructions required, speeding up the program. 
+Jump-threading eliminated then3, ifmerge4, and then5 blocks as it realized they were unnecessary reducing the amount of instructions required, speeding up the program. 
 
 #### Optimization 4, Sparse Conditional Constant Propagation and Dead Code Removal
 Benchmark `constantVariables.tip` with -sccp
@@ -188,14 +190,14 @@ Benchmark `constantVariables.tip` with -sccp
 Building constantVariables.tip without extra optimizations<br>
 Running file without SCCP...<br>
 Total runtime for 10 runs:<br>
-7.40
+9.92
 
 Building with -sccp flag...<br>
 Running Optimizing with -sccp...<br>
 Total runtime for 10 runs:<br>
-7.11
+6.84
 
-Here there is approximately a 4% decrease in runtime between the optimized and non optimized versions
+Here there is approximately a 32% decrease in runtime between the optimized and non optimized versions.
 
 ##### .ll file comparison
 ```
@@ -230,7 +232,7 @@ in the SCCP optimized one and
 
 in the standard.
 
-The SCCP optimization removed dead code from the function by using a single call to addConstant to complete the necessary calculations. 
+The SCCP optimization removed dead code from the function by using a single call to addConstant to complete the necessary calculations, allowing for faster runtimes.
 
 #### Optimization 5, Function Merging
 Benchmark `functionMerge.tip` with -intop
@@ -329,4 +331,4 @@ body1:                                            ; preds = %header1
 ```
 in the standard.
 
-The function merging optimization removed 2 congruent code blocks within the function and united the functionality within the program. The example did not have a very significant optimization increase but the program was more space efficient, and the optimization would have a greater effect in larger programs.  
+The function merging optimization removed 2 congruent code blocks within the function and united the functionality within the program. The example did not have decrease runtime as much as other passes, but the program was notably smaller, and the optimization would have a greater effect in larger programs.  

@@ -4,8 +4,14 @@ addConstant(x, z) {
     return y;
 }
 
+addConstantUnused(x, z) {
+    var y;
+    y = x + z;
+    return y;
+}
+
 main() {
-    var one, two, x, sum, answer, iter, arr;
+    var one, two, x, sum, answer, iter, arr, divtmp;
     x = 99;
     arr = [1, 2, 3, 4];
 
@@ -15,11 +21,12 @@ main() {
         one = addConstant(x, arr[0]);
         two = addConstant(x, arr[0]);
 
-        sum = (iter - one + x) + (iter % two);
+        sum = (iter - one + x) + (iter % two) + (one * two);
+        divtmp = one / two;
 
         answer = answer + (answer % sum - iter);
         iter++;
     }
 
-    return answer;
+    return answer * divtmp;
 }

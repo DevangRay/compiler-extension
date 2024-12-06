@@ -28,7 +28,7 @@ run_and_collect_times() {
         total=$total+$runtime
         times_ref+=("$runtime")
     done
-    echo "Total runtime for 10 runs:"
+    echo "Total runtime for $NUM_RUNS runs:"
     bc <<< "scale=3; $total"
 }
 

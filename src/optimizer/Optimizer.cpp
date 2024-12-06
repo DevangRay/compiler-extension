@@ -101,8 +101,6 @@ void Optimizer::optimize(llvm::Module *theModule,
         // pointers passed as arguments to direct uses of functions.
         modulePassManager.addPass(llvm::IPSCCPPass(false));
 
-        // Attach metadata to indirect call sites indicating the set of functions
-        // they may target at run-time. This should follow IPSCCP.
         modulePassManager.addPass(llvm::CalledValuePropagationPass());
     }
 
